@@ -1,0 +1,22 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+  
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+      - run: sudo apt install pipx && pipx ensurepath
+      - run: pipx install poetry
+      - run: poetry install
+      - name: Build docs
+        run: poetry run mkdocs build
+      - name: Publish docs
+        run: poetry run mkdocs gh-deploy

@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  geoserver:
+    image: kartoza/geoserver:latest
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    environment:
+      - HOST=postgis
+    depends_on:
+      postgis:
+        condition: service_healthy
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgis:
+    image: kartoza/postgis:latest
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
+    healthcheck:
+      test: "PGPASSWORD=${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U ${POSTGRES_USER} -d ${POSTGRES_DB}"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - 5050:80
+    env_file:
+      - .env
+    volumes:
+    - ./tests/postgis/init.sql:/docker-entrypoint-initdb.d/init.sql
+    depends_on:
+      postgis:
+        condition: service_healthy

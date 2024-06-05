@@ -1,0 +1,117 @@
+site_name: geoserver-py
+site_description: Python Client for GeoServer.
+strict: true
+site_url: https://github.com/arthurdjn/geoserver-py
+
+theme:
+  name: "material"
+  custom_dir: "docs/theme"
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/lightbulb-outline
+        name: "Switch to dark mode"
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/lightbulb
+        name: "Switch to light mode"
+
+  features:
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.preview
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.prune
+    - navigation.footer
+    - navigation.tracking
+    - navigation.sections # navigation.expand or navigation.sections
+    - search.suggest
+    - toc.follow
+  favicon: "favicon.ico"
+  logo: "logo.svg"
+
+repo_name: arthurdjn/geoserver-py
+repo_url: https://github.com/arthurdjn/geoserver-py
+edit_uri: edit/main/docs/
+
+# https://www.mkdocs.org/user-guide/configuration/#validation
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+extra_css:
+  - "css/style.css"
+
+nav:
+  - Get Started:
+    - Welcome to geoserver-py: index.md
+    - Changelog: changelog.md
+  - API Reference:
+    - GeoServer: api/geoserver.md
+    - GeoWebCache: api/geowebcache.md
+  - Tutorials:
+    - About: notebooks/About.ipynb
+    - Fonts: notebooks/Fonts.ipynb
+    - Layers: notebooks/Layers.ipynb
+    - Layer Groups: notebooks/Layer Groups.ipynb
+    - Security: notebooks/Security.ipynb
+    - Styles: notebooks/Styles.ipynb
+    - Workspaces: notebooks/Workspaces.ipynb
+    - Stores: notebooks/Stores.ipynb
+    - Image Mosaic: notebooks/Image Mosaic.ipynb
+    - All In One: notebooks/All In One.ipynb
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.extra
+  - pymdownx.emoji:
+  - pymdownx.tabbed:
+      alternate_style: true
+
+watch:
+  - geoserver
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            members_order: source
+            separate_signature: true
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+  - mkdocs-jupyter:
+      theme: dark
+      include_source: True
+  - mkdocs-simple-hooks:
+      hooks:
+        on_pre_build: 'docs.plugins.main:on_pre_build'
+  - exclude:
+      glob:
+        - theme/announce.html
+        - plugins/*
+        - __pycache__/*

@@ -1,0 +1,34 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: no-commit-to-branch
+        name: No commits to master
+      - id: check-toml
+        name: Check toml
+
+  - repo: local
+    hooks:
+      - id: format
+        name: Format Code
+        entry: make format
+        language: system
+        types: [python]
+
+      - id: type-check
+        name: Mypy Type Check
+        entry: make type
+        language: system
+        types: [python]
+
+      - id: isort
+        name: Sort Imports
+        entry: make isort
+        language: system
+        types: [python]
+
+      - id: lint
+        name: Linting
+        entry: make lint
+        language: system
+        types: [python]

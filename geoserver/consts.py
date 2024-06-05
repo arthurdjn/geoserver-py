@@ -1,0 +1,4 @@
+OK_MESSAGE = "OK"
+CREATED_MESSAGE = "Created"
+UPDATED_MESSAGE = "Updated"
+DELETED_MESSAGE = "Deleted"
