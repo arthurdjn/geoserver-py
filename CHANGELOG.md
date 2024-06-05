@@ -18,3 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Removed
 
 ### New Contributors
+
+## 0.0.1 (2024-06-06)
+
+### What's Changed
+
+#### Fixed
+
+#### Added
+
+Initial release.
+
+#### Changed
+
+#### Removed
+
+### New Contributors
