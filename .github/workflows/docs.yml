@@ -13,11 +13,10 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: 3.12
-      - run: git pull origin gh-pages
       - run: sudo apt install pipx && pipx ensurepath
       - run: pipx install poetry
       - run: poetry install
       - name: Build docs
         run: poetry run mkdocs build
       - name: Publish docs
-        run: poetry run mkdocs gh-deploy
+        run: poetry run mkdocs gh-deploy --force
