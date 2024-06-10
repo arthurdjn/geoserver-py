@@ -8,12 +8,13 @@ from pytest import FixtureRequest
 from geoserver import GeoServer
 from geoserver.exceptions import GeoServerError
 
+TEST_DATA_DIR = Path(__file__).parent / "data"
 # Names to reference the fixtures.
 # Use these names to reference the fixtures in the tests.
 TEST_WORKSPACE = "test_workspace"
 TEST_DATA_STORE = "test_data_store"
-TEST_FEATURETYPE = "test_feature_type"
-TEST_COVERAGESTORE = "test_coverage_store"
+TEST_FEATURE_TYPE = "test_feature_type"
+TEST_COVERAGE_STORE = "test_coverage_store"
 TEST_COVERAGE = "test_coverage"
 TEST_GROUP = "test_group"
 TEST_USER = "test_user"
@@ -33,28 +34,25 @@ def test_workspace(test_geoserver: GeoServer) -> Generator[str, None, None]:
 
 @pytest.fixture(scope="module")
 def test_data_store(test_geoserver: GeoServer, test_workspace: str) -> Generator[str, None, None]:
-    file_path = Path("./tests/data/states.shp").resolve()
-    datastore = "test-datastore"
-    test_geoserver.upload_data_store(workspace=test_workspace, store=datastore, file=file_path, format="shp")
-
-    print(test_geoserver.get_feature_types(workspace=test_workspace, store=datastore))
-
-    yield datastore
-    test_geoserver.delete_data_store(workspace=test_workspace, store=datastore, recurse=True)
+    file_path = Path(TEST_DATA_DIR, "vectors", "buildings.shp").resolve()
+    data_store = "test-datastore"
+    test_geoserver.upload_data_store(workspace=test_workspace, store=data_store, file=file_path, format="shp")
+    yield data_store
+    test_geoserver.delete_data_store(workspace=test_workspace, store=data_store, recurse=True)
 
 
 @pytest.fixture(scope="module")
 def test_feature_type(
     test_geoserver: GeoServer, test_workspace: str, test_data_store: str
 ) -> Generator[str, None, None]:
-    data = test_geoserver.get_feature_type(workspace=test_workspace, featuretype=test_data_store)
+    data = test_geoserver.get_feature_type(workspace=test_workspace, feature_type=test_data_store)
     yield data["featureType"]["name"]
 
 
 @pytest.fixture(scope="module")
 def test_coverage_store(test_geoserver: GeoServer, test_workspace: str) -> Generator[str, None, None]:
     coveragestore = "test-coveragestore"
-    file_path = Path("./tests/data/sample.tif").resolve()
+    file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
     assert file_path.exists()
 
     test_geoserver.upload_coverage_store(
@@ -150,7 +148,7 @@ def test_get_data_stores(test_geoserver: GeoServer, test_workspace: str) -> None
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_create_data_store(test_geoserver: GeoServer, test_workspace: str) -> None:
-    file_path = Path("./tests/data/states.shp").resolve()
+    file_path = Path(TEST_DATA_DIR, "vectors", "buildings.shp").resolve()
     body = {
         "dataStore": {
             "name": file_path.stem,
@@ -177,13 +175,13 @@ def test_create_data_store(test_geoserver: GeoServer, test_workspace: str) -> No
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_upload_data_store(test_geoserver: GeoServer, test_workspace: str) -> None:
-    file_path = Path("./tests/data/states.shp").resolve()
+    file_path = Path(TEST_DATA_DIR, "vectors", "buildings.shp").resolve()
     msg = test_geoserver.upload_data_store(workspace=test_workspace, file=file_path, format="shp")
     assert isinstance(msg, str)
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
-@pytest.mark.parametrize("store", ["states", TEST_DATA_STORE])
+@pytest.mark.parametrize("store", ["buildings", TEST_DATA_STORE])
 def test_get_data_store(test_geoserver: GeoServer, test_workspace: str, store: str, request: FixtureRequest) -> None:
     if store == TEST_DATA_STORE:
         store = request.getfixturevalue(store)
@@ -202,11 +200,11 @@ def test_get_data_store_invalid(test_geoserver: GeoServer, test_workspace: str, 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_delete_data_store(test_geoserver: GeoServer, test_workspace: str) -> None:
-    datastore = "tmp-datastore"
-    file_path = Path("./tests/data/states.shp").resolve()
+    data_store = "tmp-datastore"
+    file_path = Path(TEST_DATA_DIR, "vectors", "buildings.shp").resolve()
     body = {
         "dataStore": {
-            "name": datastore,
+            "name": data_store,
             "connectionParameters": {
                 "entry": [
                     {"@key": "url", "$": f"file:{file_path.as_posix()}"},
@@ -219,15 +217,15 @@ def test_delete_data_store(test_geoserver: GeoServer, test_workspace: str) -> No
     msg = test_geoserver.create_data_store(workspace=test_workspace, body=body)
     assert isinstance(msg, str)
 
-    msg = test_geoserver.delete_data_store(workspace=test_workspace, store=datastore)
+    msg = test_geoserver.delete_data_store(workspace=test_workspace, store=data_store)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_data_store(workspace=test_workspace, store=datastore)
+        test_geoserver.delete_data_store(workspace=test_workspace, store=data_store)
     assert e_info.value.status_code == 404
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_data_store(workspace="not-found", store=datastore)
+        test_geoserver.delete_data_store(workspace="not-found", store=data_store)
     assert e_info.value.status_code == 404
 
 
@@ -254,11 +252,11 @@ def test_reset_data_store_caches(test_geoserver: GeoServer, test_workspace: str,
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
-@pytest.mark.parametrize("store", [None, TEST_COVERAGESTORE])
+@pytest.mark.parametrize("store", [None, TEST_COVERAGE_STORE])
 def test_get_coverages(
     test_geoserver: GeoServer, test_workspace: str, store: Optional[str], request: FixtureRequest
 ) -> None:
-    if store == TEST_COVERAGESTORE:
+    if store == TEST_COVERAGE_STORE:
         store = request.getfixturevalue(store)
 
     data = test_geoserver.get_coverages(workspace=test_workspace, store=store)
@@ -266,7 +264,7 @@ def test_get_coverages(
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
-@pytest.mark.parametrize("coverage,store", [(TEST_COVERAGESTORE, TEST_COVERAGESTORE)])
+@pytest.mark.parametrize("coverage,store", [(TEST_COVERAGE_STORE, TEST_COVERAGE_STORE)])
 def test_create_coverage(
     test_geoserver: GeoServer,
     test_workspace: str,
@@ -274,9 +272,9 @@ def test_create_coverage(
     store: str,
     request: FixtureRequest,
 ) -> None:
-    if coverage == TEST_COVERAGESTORE:
+    if coverage == TEST_COVERAGE_STORE:
         coverage = request.getfixturevalue(coverage)
-    if store == TEST_COVERAGESTORE:
+    if store == TEST_COVERAGE_STORE:
         store = request.getfixturevalue(store)
 
     print(f"coverage: {coverage}")
@@ -299,7 +297,7 @@ def test_create_coverage(
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
-@pytest.mark.parametrize("store", [TEST_COVERAGESTORE, None])
+@pytest.mark.parametrize("store", [TEST_COVERAGE_STORE, None])
 def test_get_coverage(
     test_geoserver: GeoServer,
     test_workspace: str,
@@ -307,7 +305,7 @@ def test_get_coverage(
     store: str,
     request: FixtureRequest,
 ) -> None:
-    if store == TEST_COVERAGESTORE:
+    if store == TEST_COVERAGE_STORE:
         store = request.getfixturevalue(store)
 
     data = test_geoserver.get_coverage(workspace=test_workspace, coverage=test_coverage_store, store=store)
@@ -341,7 +339,7 @@ def test_update_coverage(
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_delete_coverage(test_geoserver: GeoServer, test_workspace: str) -> None:
     coveragestore = "tmp-coveragestore"
-    file_path = Path("./tests/data/sample.tif").resolve()
+    file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
     test_geoserver.upload_coverage_store(
         workspace=test_workspace,
         store=coveragestore,
@@ -380,7 +378,7 @@ def test_get_coverage_stores(test_geoserver: GeoServer, test_workspace: str) -> 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_create_coverage_store(test_geoserver: GeoServer, test_workspace: str) -> None:
-    file_path = Path("./tests/data/sample.tif").resolve()
+    file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
     body = {
         "coverageStore": {
             "name": f"{file_path.stem}-store1",
@@ -397,8 +395,7 @@ def test_create_coverage_store(test_geoserver: GeoServer, test_workspace: str) -
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_upload_coverage_store(test_geoserver: GeoServer, test_workspace: str) -> None:
-    file_path = Path("./tests/data/sample.tif").resolve()
-
+    file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
     data = test_geoserver.upload_coverage_store(
         workspace=test_workspace,
         file=file_path,
@@ -434,7 +431,7 @@ def test_update_coverage_store(test_geoserver: GeoServer, test_workspace: str, t
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_delete_coverage_store(test_geoserver: GeoServer, test_workspace: str) -> None:
-    file_path = Path("./tests/data/sample.tif").resolve()
+    file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
 
     _ = test_geoserver.upload_coverage_store(
         workspace=test_workspace,
@@ -486,7 +483,7 @@ def test_get_feature_type(
     if store == TEST_DATA_STORE:
         store = request.getfixturevalue(store)
 
-    data = test_geoserver.get_feature_type(workspace=test_workspace, featuretype=test_feature_type, store=store)
+    data = test_geoserver.get_feature_type(workspace=test_workspace, feature_type=test_feature_type, store=store)
     assert isinstance(data, dict)
 
 
@@ -500,14 +497,14 @@ def test_update_feature_type(
     recalculate: Optional[str],
 ) -> None:
     data = test_geoserver.get_feature_type(
-        workspace=test_workspace, featuretype=test_feature_type, store=test_data_store
+        workspace=test_workspace, feature_type=test_feature_type, store=test_data_store
     )
     assert isinstance(data, dict)
 
     data["featureType"]["title"] = "Updated title"
     msg = test_geoserver.update_feature_type(
         workspace=test_workspace,
-        featuretype=test_feature_type,
+        feature_type=test_feature_type,
         body=data,
         store=test_data_store,
         recalculate=recalculate,  # type: ignore
@@ -515,7 +512,7 @@ def test_update_feature_type(
     assert isinstance(msg, str)
 
     data = test_geoserver.get_feature_type(
-        workspace=test_workspace, featuretype=test_feature_type, store=test_data_store
+        workspace=test_workspace, feature_type=test_feature_type, store=test_data_store
     )
     assert data["featureType"]["title"] == "Updated title"
 
@@ -529,7 +526,7 @@ def test_reset_feature_type_caches(
 ) -> None:
     msg = test_geoserver.reset_feature_type_caches(
         workspace=test_workspace,
-        featuretype=test_feature_type,
+        feature_type=test_feature_type,
         store=test_data_store,
     )
     assert isinstance(msg, str)
@@ -544,7 +541,7 @@ def test_delete_feature_type(
 ) -> None:
     msg = test_geoserver.delete_feature_type(
         workspace=test_workspace,
-        featuretype=test_feature_type,
+        feature_type=test_feature_type,
         store=test_data_store,
         recurse=True,
     )
@@ -591,12 +588,12 @@ def test_get_layer(test_geoserver: GeoServer, workspace: str, test_coverage: str
     [
         (None, None),
         ("not-found", None),
-        (TEST_COVERAGESTORE, "not-found"),
+        (TEST_COVERAGE_STORE, "not-found"),
         ("not-found", "not-found"),
     ],
 )
 def test_get_layer_invalid(test_geoserver: GeoServer, workspace: str, layer: str, request: FixtureRequest) -> None:
-    if layer == TEST_COVERAGESTORE:
+    if layer == TEST_COVERAGE_STORE:
         layer = request.getfixturevalue(layer)
 
     with pytest.raises(GeoServerError) as e_info:
@@ -1086,7 +1083,7 @@ def test_get_styles(test_geoserver: GeoServer, workspace: str, request: FixtureR
 @pytest.mark.skip("Not implemented yet.")
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_create_style(test_geoserver: GeoServer, test_workspace: str) -> None:
-    # file_path = Path("./tests/data/style.sld").resolve()
+    # file_path = Path(TEST_DATA_DIR, "styles", "elevation.sld").resolve()
     ...
 
 
@@ -1137,7 +1134,7 @@ def test_get_template(
     test_geoserver: GeoServer,
     test_workspace: str,
     test_data_store: str,
-    featuretype: str,
+    feature_type: str,
     test_coverage_store: str,
     coverage: str,
 ) -> None: ...
@@ -1149,7 +1146,7 @@ def test_insert_template(
     test_geoserver: GeoServer,
     test_workspace: str,
     test_data_store: str,
-    featuretype: str,
+    feature_type: str,
     test_coverage_store: str,
     coverage: str,
 ) -> None: ...
@@ -1161,7 +1158,7 @@ def test_delete_template(
     test_geoserver: GeoServer,
     test_workspace: str,
     test_data_store: str,
-    featuretype: str,
+    feature_type: str,
     test_coverage_store: str,
     coverage: str,
 ) -> None: ...

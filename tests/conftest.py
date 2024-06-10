@@ -27,6 +27,6 @@ def test_geowebcache() -> Generator[GeoWebCache, None, None]:
 
 @pytest.fixture(scope="session", autouse=True)
 def test_postgis() -> Generator[None, None, None]:
-    cmd = 'ogr2ogr -f PostgreSQL PG:"host=localhost port=5432 user=admin dbname=db password=postgres" examples/vectors/jamoat-db.shp -nlt PROMOTE_TO_MULTI -lco OVERWRITE=YES'
+    cmd = 'ogr2ogr -f PostgreSQL PG:"host=localhost port=5432 user=admin dbname=db password=postgres" tests/data/vectors/landuse.shp -nlt PROMOTE_TO_MULTI -lco OVERWRITE=YES'
     subprocess.run(cmd, shell=True, check=False)
     yield None

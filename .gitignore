@@ -166,7 +166,3 @@ cython_debug/
 
 # Linting
 .ruff_cache/
-
-# Data
-examples/
-tests/data/
