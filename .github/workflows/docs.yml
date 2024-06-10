@@ -19,4 +19,4 @@ jobs:
       - name: Build docs
         run: poetry run mkdocs build
       - name: Publish docs
-        run: poetry run mkdocs gh-deploy
+        run: poetry run mkdocs gh-deploy --force
