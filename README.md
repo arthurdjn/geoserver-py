@@ -71,7 +71,7 @@ This section will guide you on how to setup and use the package.
 ### Installation
 
 ```bash
-pip install geoserver
+pip install geoserver-py
 ```
 
 ### Usage
