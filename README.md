@@ -35,9 +35,6 @@ This package supports both **JSON** and **XML** requests and response. It provid
 > [!NOTE]
 > This package only relies on `requests` as a dependency, which make it extremely lightweight and easy to install: no need to install GDAL!
 
-> [!TIP]
-> Check out the [documentation](https://arthurdjn.github.io/geoserver-py) for more information!
-
 #### Get requests
 
 ```python
@@ -60,7 +57,7 @@ geoserver.create_workspace(body="<workspace><name>new_workspace</name></workspac
 
 ### Documentation
 
-We provide several [examples](./notebooks) and a [documentation](https://docs.geoserver.org/main/en/user/rest/index.html) to help you get started,
+We provide several [examples](./notebooks) and a [documentation](https://arthurdjn.github.io/geoserver-py) to help you get started,
 
 <br>
 
