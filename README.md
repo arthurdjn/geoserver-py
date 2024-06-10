@@ -15,7 +15,7 @@
 ---
 
 <p align="center">
-    A minimalist python client to communicate with GeoServer. Check out the [documentation]() for more information!
+    A minimalist python client to communicate with GeoServer. Check out the <a href="https://arthurdjn.github.io/geoserver-py">documentation</a> for more information!
 </p>
 
 <br>
