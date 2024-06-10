@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "geoserver-py"
-version = "0.0.1"
+version = "0.0.2"
 description = "Minimal python client to communicate with Geoserver."
 authors = ["Arthur Dujardin <arthurdujardin.github@gmail.com>"]
 maintainers = ["Arthur Dujardin <arthurdujardin.github@gmail.com>"]
@@ -114,7 +114,11 @@ message = "Version updated from {current_version} to {new_version}"
 commit_args = ""
 
 [[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
 filename = "geoserver/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
-
