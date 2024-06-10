@@ -15,7 +15,7 @@
 ---
 
 <p align="center">
-    A minimalist python client to communicate with GeoServer.
+    A minimalist python client to communicate with GeoServer. Check out the [documentation]() for more information!
 </p>
 
 <br>
@@ -26,7 +26,7 @@ This python package provides a simple interface to communicate with GeoServer. I
 
 ### Why?
 
-The purpose of this package is to implement the REST API endpoints with **full type hints** and **documentation**. This package does not aim to provide a high-level abstraction over the GeoServer REST API, thus it is expected that you have some knowledge of the GeoServer REST API.
+The purpose of this package is to implement the REST API endpoints with **full type hints** and **[documentation](https://arthurdjn.github.io/geoserver-py)**. This package does not aim to provide a high-level abstraction over the GeoServer REST API, thus it is expected that you have some knowledge of the GeoServer REST API.
 
 ### Features
 
@@ -34,6 +34,9 @@ This package supports both **JSON** and **XML** requests and response. It provid
 
 > [!NOTE]
 > This package only relies on `requests` as a dependency, which make it extremely lightweight and easy to install: no need to install GDAL!
+
+> [!TIP]
+> Check out the [documentation](https://arthurdjn.github.io/geoserver-py) for more information!.
 
 #### Get requests
 

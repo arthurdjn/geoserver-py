@@ -3,7 +3,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "geoserver"
+name = "geoserver-py"
 version = "0.0.1"
 description = "Minimal python client to communicate with Geoserver."
 authors = ["Arthur Dujardin <arthurdujardin.github@gmail.com>"]
@@ -18,6 +18,9 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+]
+packages = [
+    { include="geoserver", from="." },
 ]
 
 [tool.poetry.dependencies]
