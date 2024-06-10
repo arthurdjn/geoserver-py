@@ -1,6 +1,5 @@
 <div align="center" style="width: 100%; margin: auto">
   <a href="" rel="noopener"><img src="https://raw.githubusercontent.com/arthurdjn/geoserver-py/main/medias/geoserver-py.png" alt="Banner"></a>
-  <h3 align="center">geoserver-py</h3>
 
 [![python](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10_%7C_3.11_%7C_3.12-red.svg?color=009ACF&labelColor=6DBA65&logo=python&logoColor=white)](https://www.python.org/)
 [![black](https://img.shields.io/badge/black-formatter-red.svg?color=009ACF&labelColor=6DBA65)](https://github.com/psf/black)
@@ -15,7 +14,8 @@
 ---
 
 <p align="center">
-    A minimalist python client to communicate with GeoServer. Check out the <a href="https://arthurdjn.github.io/geoserver-py">documentation</a> for more information!
+    Unofficial GeoServer python client. Manage workspaces, permissions, upload vectors, rasters and more. Check out the <a href="https://arthurdjn.github.io/geoserver-py">documentation</a> for more information! <br>
+    <i>We are looking for contributors and feedbacks!</i>
 </p>
 
 <br>
