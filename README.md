@@ -36,7 +36,7 @@ This package supports both **JSON** and **XML** requests and response. It provid
 > This package only relies on `requests` as a dependency, which make it extremely lightweight and easy to install: no need to install GDAL!
 
 > [!TIP]
-> Check out the [documentation](https://arthurdjn.github.io/geoserver-py) for more information!.
+> Check out the [documentation](https://arthurdjn.github.io/geoserver-py) for more information!
 
 #### Get requests
 
