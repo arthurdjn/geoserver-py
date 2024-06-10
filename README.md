@@ -1,5 +1,5 @@
 <div align="center" style="width: 100%; margin: auto">
-  <a href="" rel="noopener"><img src="https://raw.githubusercontent.com/arthurdjn/geoserver-py/main/medias/banner.png" alt="Banner"></a>
+  <a href="" rel="noopener"><img src="https://raw.githubusercontent.com/arthurdjn/geoserver-py/main/medias/geoserver-py.png" alt="Banner"></a>
   <h3 align="center">geoserver-py</h3>
 
 [![python](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10_%7C_3.11_%7C_3.12-red.svg?color=009ACF&labelColor=6DBA65&logo=python&logoColor=white)](https://www.python.org/)
