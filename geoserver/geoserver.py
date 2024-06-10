@@ -936,7 +936,7 @@ class GeoServer(Base):
     def get_feature_type(
         self,
         workspace: str,
-        featuretype: str,
+        feature_type: str,
         *,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -947,7 +947,7 @@ class GeoServer(Base):
     def get_feature_type(
         self,
         workspace: str,
-        featuretype: str,
+        feature_type: str,
         *,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -957,7 +957,7 @@ class GeoServer(Base):
     def get_feature_type(
         self,
         workspace: str,
-        featuretype: str,
+        feature_type: str,
         *,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -967,7 +967,7 @@ class GeoServer(Base):
 
         Args:
             workspace: The name of the workspace.
-            featuretype: The name of the feature type.
+            feature_type: The name of the feature type.
             store: Optional. The name of the data store.
             quiet_on_not_found: Optional. If true, the server will not report an error if the feature type is not found.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
@@ -975,11 +975,9 @@ class GeoServer(Base):
         Returns:
             The requested feature type.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{featuretype}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}.{format}"
         if store is not None:
-            url = (
-                f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{featuretype}.{format}"
-            )
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}.{format}"
 
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
@@ -987,7 +985,7 @@ class GeoServer(Base):
     def update_feature_type(
         self,
         workspace: str,
-        featuretype: str,
+        feature_type: str,
         body: Union[str, Dict[str, Any]],
         *,
         store: Optional[str] = None,
@@ -997,7 +995,7 @@ class GeoServer(Base):
 
         Args:
             workspace: The name of the workspace.
-            featuretype: The name of the feature type.
+            feature_type: The name of the feature type.
             body: The body of the request used to modify the feature type.
             store: Optional. The name of the data store.
             recalculate: Optional. Specifies whether to recalculate properties for a feature type.
@@ -1019,37 +1017,37 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{featuretype}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{featuretype}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}"
 
         params = dict(recalculate=recalculate)
         self._request(method="put", url=url, body=body, params=params)
         return UPDATED_MESSAGE
 
     def delete_feature_type(
-        self, workspace: str, featuretype: str, *, store: Optional[str] = None, recurse: bool = False
+        self, workspace: str, feature_type: str, *, store: Optional[str] = None, recurse: bool = False
     ) -> str:
         """Delete an individual feature type.
 
         Args:
             workspace: The name of the workspace.
-            featuretype: The name of the feature type.
+            feature_type: The name of the feature type.
             store: Optional. The name of the data store.
             recurse: Optional. If true, all resources contained in the store are also removed.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{featuretype}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{featuretype}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}"
 
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
-    def reset_feature_type_caches(self, workspace: str, featuretype: str, *, store: Optional[str] = None) -> str:
+    def reset_feature_type_caches(self, workspace: str, feature_type: str, *, store: Optional[str] = None) -> str:
         """Resets caches for this feature type.
         This operation is used to force GeoServer to drop caches associated to this feature type,
         and reconnect to the vector source the next time it is needed by a request.
@@ -1058,15 +1056,15 @@ class GeoServer(Base):
 
         Args:
             workspace: The name of the workspace.
-            featuretype: The name of the feature type.
+            feature_type: The name of the feature type.
             store: Optional. The name of the data store.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{featuretype}/reset"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}/reset"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{featuretype}/reset"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}/reset"
 
         self._request(method="put", url=url)
         return OK_MESSAGE
@@ -2751,77 +2749,75 @@ class GeoServer(Base):
         template: str,
         *,
         workspace: Optional[str] = None,
-        datastore: Optional[str] = None,
-        featuretype: Optional[str] = None,
-        coveragestore: Optional[str] = None,
+        data_store: Optional[str] = None,
+        feature_type: Optional[str] = None,
+        coverage_store: Optional[str] = None,
         coverage: Optional[str] = None,
-        format: Literal["json", "xml"] = "json",
-    ) -> Dict[str, Any]:
+    ) -> str:
         """Displays a list of all templates on the server.
 
         Args:
             template: The name of the template.
             workspace: Optional. The name of the workspace.
-            datastore: Optional. The name of the datastore.
-            featuretype: Optional. The name of the featuretype.
-            coveragestore: Optional. The name of the coveragestore.
+            data_store: Optional. The name of the datastore.
+            feature_type: Optional. The name of the featuretype.
+            coverage_store: Optional. The name of the coveragestore.
             coverage: Optional. The name of the coverage.
-            format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The templates.
         """
         if (
             workspace is None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
             url = f"{self.service_url}/rest/templates/{template}.ftl"
         if (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
             url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is not None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is not None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{datastore}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is not None
-            and featuretype is not None
-            and coveragestore is None
+            and data_store is not None
+            and feature_type is not None
+            and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{featuretype}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is not None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is not None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coveragestore}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is not None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is not None
             and coverage is not None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coveragestore}/coverages/{coverage}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{template}.ftl"
         else:
             raise ValueError(
-                f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {datastore}, and {featuretype}."
+                f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {data_store}, and {feature_type}."
             )
 
         response = self._request(method="get", url=url)
@@ -2832,9 +2828,9 @@ class GeoServer(Base):
         template: str,
         body: str,
         workspace: Optional[str] = None,
-        datastore: Optional[str] = None,
-        featuretype: Optional[str] = None,
-        coveragestore: Optional[str] = None,
+        data_store: Optional[str] = None,
+        feature_type: Optional[str] = None,
+        coverage_store: Optional[str] = None,
         coverage: Optional[str] = None,
     ) -> str:
         """Inserts or updates a single template registered for use in a workspace (example for GetFeatureInfo WMS operation).
@@ -2850,55 +2846,55 @@ class GeoServer(Base):
         """
         if (
             workspace is None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
             url = f"{self.service_url}/rest/templates/{template}.ftl"
         if (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
             url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is not None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is not None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{datastore}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is not None
-            and featuretype is not None
-            and coveragestore is None
+            and data_store is not None
+            and feature_type is not None
+            and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{featuretype}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is not None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is not None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coveragestore}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is not None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is not None
             and coverage is not None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coveragestore}/coverages/{coverage}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{template}.ftl"
         else:
             raise ValueError(
-                f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {datastore}, and {featuretype}."
+                f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {data_store}, and {feature_type}."
             )
 
         headers = {"Content-Type": "text/plain"}
@@ -2909,9 +2905,9 @@ class GeoServer(Base):
         self,
         template: str,
         workspace: Optional[str] = None,
-        datastore: Optional[str] = None,
-        featuretype: Optional[str] = None,
-        coveragestore: Optional[str] = None,
+        data_store: Optional[str] = None,
+        feature_type: Optional[str] = None,
+        coverage_store: Optional[str] = None,
         coverage: Optional[str] = None,
     ) -> str:
         """Deletes a single template registered for use on the server.
@@ -2924,55 +2920,55 @@ class GeoServer(Base):
         """
         if (
             workspace is None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
             url = f"{self.service_url}/rest/templates/{template}.ftl"
         if (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
             url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is not None
-            and featuretype is None
-            and coveragestore is None
+            and data_store is not None
+            and feature_type is None
+            and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{datastore}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is not None
-            and featuretype is not None
-            and coveragestore is None
+            and data_store is not None
+            and feature_type is not None
+            and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{datastore}/featuretypes/{featuretype}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is not None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is not None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coveragestore}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{template}.ftl"
         elif (
             workspace is not None
-            and datastore is None
-            and featuretype is None
-            and coveragestore is not None
+            and data_store is None
+            and feature_type is None
+            and coverage_store is not None
             and coverage is not None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coveragestore}/coverages/{coverage}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{template}.ftl"
         else:
             raise ValueError(
-                f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {datastore}, and {featuretype}."
+                f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {data_store}, and {feature_type}."
             )
 
         self._request(method="delete", url=url)
