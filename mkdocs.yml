@@ -26,6 +26,7 @@ theme:
     - content.tabs.link
     - content.code.annotate
     - content.code.copy
+    - navigation.prune
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.top
@@ -104,6 +105,9 @@ plugins:
             merge_init_into_class: true
             show_signature_annotations: true
             signature_crossrefs: true
+            show_labels: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
   - mkdocs-jupyter:
       theme: dark
       include_source: True

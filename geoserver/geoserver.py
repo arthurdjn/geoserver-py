@@ -128,6 +128,13 @@ class GeoServer(Base):
 
         Returns:
             The version of the GeoServer instance.
+
+        Example:
+            To get the version of the GeoServer instance, use the following code:
+
+            ```python
+            geoserver.get_version()
+            ```
         """
         url = f"{self.service_url}/rest/about/version.{format}"
         params = dict(manifest=manifest, key=key, value=value)
@@ -172,6 +179,13 @@ class GeoServer(Base):
 
         Returns:
             The version of the GeoServer instance.
+
+        Example:
+            To get the status of the GeoServer instance, use the following code:
+
+            ```python
+            geoserver.get_status()
+            ```
         """
         url = f"{self.service_url}/rest/about/status.{format}"
         params = dict(manifest=manifest, key=key, value=value)
@@ -194,6 +208,13 @@ class GeoServer(Base):
 
         Returns:
             The system status of the GeoServer instance.
+
+        Example:
+            To get the system status of the GeoServer instance, use the following code:
+
+            ```python
+            geoserver.get_system_status()
+            ```
         """
         url = f"{self.service_url}/rest/about/system-status.{format}"
         response = self._request(method="get", url=url)
@@ -202,12 +223,12 @@ class GeoServer(Base):
     # Data Stores
 
     @overload
-    def get_data_stores(self, workspace: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_data_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_data_stores(self, workspace: str, *, format: Literal["xml"]) -> str: ...
+    def get_data_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_data_stores(self, workspace: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_data_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """List all data stores in workspace ws.
 
         Args:
@@ -216,95 +237,84 @@ class GeoServer(Base):
 
         Returns:
             The list of all datastores in the workspace.
+
+        Example:
+            To get the list of all data stores in the workspace, use the following code:
+
+            ```python
+            geoserver.get_data_stores(workspace="my_workspace")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/datastores.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def data_store_exists(self, workspace: str, store: str) -> bool:
+    def data_store_exists(self, name: str, *, workspace: str) -> bool:
         """Check if a data store exists in a workspace.
 
         Args:
+            name: The name of the data store.
             workspace: The name of the workspace containing the data stores.
-            store: The name of the data store.
 
         Returns:
             True if the data store exists, False otherwise.
+
+        Example:
+            To check if a data store exists in a workspace, use the following code:
+
+            ```python
+            geoserver.data_store_exists("my_data_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}.xml"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}.xml"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_data_store(self, workspace: str, body: Union[str, Dict[str, Any]]) -> str:
+    def create_data_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Adds a new data store to the workspace.
 
         Note:
             Read the GeoServer documentation [here](https://docs.geoserver.org/latest/en/api/#1.0.0/datastores.yaml).
 
         Args:
-            workspace: The name of the workspace containing the data stores.
             body: The body of the request used to create the data store.
+            workspace: The name of the workspace containing the data stores.
 
         Returns:
             The data store created.
+
+        Example:
+            To create a new data store in a workspace, use the following code:
+
+            ```python
+            body = \"\"\"
+            <dataStore>
+                <name>my_data_store</name>
+                <connectionParameters>
+                    <entry key="host">localhost</entry>
+                    <entry key="port">5432</entry>
+                    <entry key="database">my_database</entry>
+                    <entry key="user">my_user</entry>
+                    <entry key="passwd">my_password</entry>
+                    <entry key="dbtype">postgis</entry>
+                </connectionParameters>
+            </dataStore>
+            \"\"\"
+
+            geoserver.create_data_store(body, workspace="my_workspace")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/datastores"
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    # # TODO: Update docs
-    # def upload_coverage_store(
-    #     self,
-    #     workspace: str,
-    #     file: Union[str, Path, BufferedReader],
-    #     *,
-    #     store: Optional[str] = None,
-    #     method: Literal["auto", "file", "external", "url", "remote"] = "auto",
-    #     format: Literal["geotiff", "worldimage", "imagemosaic"],
-    #     update_bbox: bool = False,
-    #     configure: Literal["none", "all"] = "all",
-    #     use_jai_imageread: bool = False,
-    #     coverage_name: Optional[str] = None,
-    #     filename: Optional[str] = None,
-    # ) -> str:
-    #     """Adds a new or update an existing coverage store from a local file.
-
-    #     Note:
-    #         The `store` parameter is automatically inferred from the file, if not provided.
-    #         In case the file is a buffer, the `store` parameter is required.
-
-    #     Note:
-    #         The file name of the resource can be overwritten by:
-    #         - Providing the `filename` parameter.
-    #         - Using the `store` parameter. In this case, if the `filename` is not provided,
-    #             the file name will be the same as the store name.
-
-    #     Args:
-    #         workspace: The name of the workspace.
-    #         file: The file to upload.
-    #         store: Optional. The name of the coverage store.
-    #         filename:  Optional. The filename parameter specifies the target file name for a file that needs to be harvested as part of a mosaic.
-    #             This is important to avoid clashes and to make sure the right dimension values are available in the name for multidimensional mosaics to work.
-    #             Only used if method="file".
-    #         format: The type of the file. Must be one of "geotiff", "worldimage", or "imagemosaic".
-    #         update_bbox: When set to `True`, triggers re-calculation of the layer native bbox. Defaults to `False`.
-
-    #     Returns:
-    #         Success message.
-    #     """
-    #     if isinstance(file, Path):
-    #         file = file.as_posix()
-    #     if isinstance(file, str):
-    #         store = store or Path(file).stem
-    #         filename = filename or f"{store}.{Path(file).suffix[1:]}"
-
     # TODO: Update docs
     def upload_data_store(
         self,
-        workspace: str,
         file: Union[str, Path, BufferedReader],
         *,
-        store: Optional[str] = None,
+        workspace: str,
+        name: Optional[str] = None,
         filename: Optional[str] = None,
         format: str = "shp",
         configure: Literal["none", "all"] = "all",
@@ -319,26 +329,40 @@ class GeoServer(Base):
         Note:
             The file name of the resource can be overwritten by:
             - Providing the `filename` parameter.
-            - Using the `store` parameter. In this case, if the `filename` is not provided,
+            - Using the `name` parameter. In this case, if the `filename` is not provided,
                 the file name will be the same as the store name.
 
         Args:
-            workspace: The name of the workspace.
             file: The file to upload.
-            store: Optional. The name of the coverage store.
+            workspace: The name of the workspace.
+            name: Optional. The name of the data store.
             filename:  Optional. The filename parameter specifies the target file name for a file that needs to be harvested as part of a mosaic.
                 This is important to avoid clashes and to make sure the right dimension values are available in the name for multidimensional mosaics to work.
                 Only used if method="file".
 
         Returns:
             Success message.
+
+        Example:
+            To upload a new data store from a local file, use the following code:
+
+            ```python
+            geoserver.upload_data_store("my_shapefile.zip", workspace="my_workspace", name="my_data_store")
+            ```
+
+            Or, using a buffer:
+
+            ```python
+            with open("my_shapefile.zip", "rb") as f:
+                geoserver.upload_data_store(f, workspace="my_workspace", name="my_data_store")
+            ```
         """
         if isinstance(file, Path):
             file = file.as_posix()
         if isinstance(file, str):
-            store = store or Path(file).stem
-            filename = filename or f"{store}.{Path(file).suffix[1:]}"
-        if store is None:
+            name = name or Path(file).stem
+            filename = filename or f"{name}.{Path(file).suffix[1:]}"
+        if name is None:
             raise ValueError("The `store` parameter is required.")
 
         headers = {}
@@ -351,77 +375,105 @@ class GeoServer(Base):
 
         if isinstance(file, str) and file.startswith(("file:", "http://", "https://")):
             headers["Content-Type"] = "text/plain"
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/external.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}/external.{format}"
             self._request(method="put", url=url, data=file, params=params, headers=headers)
             return CREATED_MESSAGE
 
-        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/file.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}/file.{format}"
         self._request(method="put", url=url, file=file, params=params, headers=headers)
         return CREATED_MESSAGE
 
     @overload
     def get_data_store(
-        self, workspace: str, store: str, *, quiet_on_not_found: bool = False, format: Literal["json"] = "json"
+        self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
     def get_data_store(
-        self, workspace: str, store: str, *, quiet_on_not_found: bool = False, format: Literal["xml"]
+        self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["xml"]
     ) -> str: ...
 
     def get_data_store(
-        self, workspace: str, store: str, *, quiet_on_not_found: bool = False, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Controls a particular data store in a given workspace.
 
         Args:
+            name: The name of the data store.
             workspace: The name of the workspace containing the data stores.
-            store: The name of the data store.
             quiet_on_not_found: Optional. If true, the server will not report an error if the data store is not found.
+            format: Optional. The format of the response. It can be either "json" or "xml".
 
         Returns:
             The requested data store.
+
+        Example:
+            To get the data store, use the following code:
+
+            ```python
+            geoserver.get_data_store("my_data_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}.{format}"
         params = dict(quietOnNotFound=quiet_on_not_found)
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def update_data_store(self, workspace: str, store: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_data_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Modify a data store from a workspace.
 
         Note:
             Read the official GeoServer documentation [here](https://docs.geoserver.org/latest/en/api/#1.0.0/datastores.yaml).
 
         Args:
+            name: The name of the data store to modify.
             workspace: The name of the workspace containing the data stores.
-            store: The name of the data store to modify.
             body: The body of the request used to modify the data store.
 
         Returns:
             Success message.
+
+        Example:
+            To update a data store, use the following code:
+
+            ```python
+            body = \"\"\"
+            <dataStore>
+                <name>my_new_data_store</name>
+            </dataStore>
+            \"\"\"
+
+            geoserver.update_data_store("my_data_store", body, workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_data_store(self, workspace: str, store: str, *, recurse: bool = False) -> str:
+    def delete_data_store(self, name: str, *, workspace: str, recurse: bool = False) -> str:
         """Remove data store from workspace ws.
 
         Args:
+            name: The name of the data store to remove.
             workspace: The name of the workspace containing the data stores.
-            store: The name of the data store to remove.
             recurse: Optional. If true, all resources contained in the store are also removed. Defaults to `False`.
 
         Returns:
             Success message.
+
+        Example:
+            To delete a data store, use the following code:
+
+            ```python
+            geoserver.delete_data_store("my_data_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}"
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
-    def reset_data_store_caches(self, workspace: str, store: str) -> str:
+    def reset_data_store_caches(self, name: str, *, workspace: str) -> str:
         """Resets caches for this data store.
         This operation is used to force GeoServer to drop caches associated to this data store,
         and reconnect to the vector source the next time it is needed by a request.
@@ -429,13 +481,20 @@ class GeoServer(Base):
         and the structure of the feature types it's serving.
 
         Args:
+            name: The name of the data store.
             workspace: The name of the workspace containing the data stores.
-            store: The name of the data store.
 
         Returns:
             Success message.
+
+        Example:
+            To reset the caches of a data store, use the following code:
+
+            ```python
+            geoserver.reset_data_store_caches("my_data_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/reset"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}/reset"
         self._request(method="put", url=url)  # NOTE: Can also be a POST
         return OK_MESSAGE
 
@@ -446,8 +505,8 @@ class GeoServer(Base):
     @overload
     def get_coverages(
         self,
-        workspace: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         list: Optional[str] = None,
         format: Literal["json"] = "json",
@@ -456,8 +515,8 @@ class GeoServer(Base):
     @overload
     def get_coverages(
         self,
-        workspace: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         list: Optional[str] = None,
         format: Literal["xml"],
@@ -465,8 +524,8 @@ class GeoServer(Base):
 
     def get_coverages(
         self,
-        workspace: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         list: Optional[str] = None,
         format: Literal["json", "xml"] = "json",
@@ -481,6 +540,19 @@ class GeoServer(Base):
 
         Returns:
             The list of all coverages in the workspace and data store.
+
+        Example:
+            To get the list of all coverages in a workspace, use the following code:
+
+            ```python
+            geoserver.get_coverages(workspace="my_workspace")
+            ```
+
+            To specify a coverage store, use the following code:
+
+            ```python
+            geoserver.get_coverages(workspace="my_workspace", store="my_coverage_store")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/coverages.{format}"
         if store is not None:
@@ -489,16 +561,26 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(list=list))
         return response.json() if format == "json" else response.text
 
-    def create_coverage(self, workspace: str, body: Union[str, Dict[str, Any]], *, store: Optional[str] = None) -> str:
+    def create_coverage(self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None) -> str:
         """Creates a new coverage, the underlying data store must exist.
 
         Args:
-            workspace: The name of the workspace.
-            store: The name of the coverage store.
             body: The body the coverage to be created.
+            workspace: The name of the workspace.
+            store: Optional. The name of the coverage store.
 
         Returns:
             The created coverage.
+
+        Example:
+            To create a new coverage, use the following code:
+
+            ```python
+            # Check the GeoServer official documentation for the body structure
+            body = "..."
+
+            geoserver.create_coverage(body, workspace="my_workspace", store="my_coverage_store")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/coverages"
         if store is not None:
@@ -510,9 +592,9 @@ class GeoServer(Base):
     @overload
     def get_coverage(
         self,
-        workspace: str,
-        coverage: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
@@ -521,9 +603,9 @@ class GeoServer(Base):
     @overload
     def get_coverage(
         self,
-        workspace: str,
-        coverage: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
@@ -531,9 +613,9 @@ class GeoServer(Base):
 
     def get_coverage(
         self,
-        workspace: str,
-        coverage: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
@@ -541,18 +623,31 @@ class GeoServer(Base):
         """Get an individual coverage.
 
         Args:
+            name: The name of the coverage.
             workspace: The name of the workspace.
-            coverage: The name of the coverage.
             store: Optional. The name of the coverage datastore. Defaults to None.
             quiet_on_not_found: Optional. If true, the server will not report an error if the coverage is not found.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The requested coverage.
+
+        Example:
+            To get a coverage, use the following code:
+
+            ```python
+            geoserver.get_coverage("my_coverage", workspace="my_workspace")
+            ```
+
+            To specify a coverage store, use the following code:
+
+            ```python
+            geoserver.get_coverage("my_coverage", workspace="my_workspace", store="my_coverage_store")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coverages/{coverage}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coverages/{name}.{format}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}.{format}"
 
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
@@ -560,9 +655,9 @@ class GeoServer(Base):
     @overload
     def get_coverage_index(
         self,
-        workspace: str,
-        coverage: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
@@ -571,9 +666,9 @@ class GeoServer(Base):
     @overload
     def get_coverage_index(
         self,
-        workspace: str,
-        coverage: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
@@ -581,9 +676,9 @@ class GeoServer(Base):
 
     def get_coverage_index(
         self,
-        workspace: str,
-        coverage: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
@@ -591,56 +686,88 @@ class GeoServer(Base):
         """Get an individual coverage index structure.
 
         Args:
+            name: The name of the coverage.
             workspace: The name of the workspace.
-            coverage: The name of the coverage.
             store: Optional. The name of the coverage datastore. Defaults to None.
             quiet_on_not_found: Optional. If true, the server will not report an error if the coverage is not found.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The requested coverage.
+
+        Example:
+            To get a coverage index, use the following code:
+
+            ```python
+            geoserver.get_coverage_index("my_coverage", workspace="my_workspace")
+            ```
+
+            To specify a coverage store, use the following code:
+
+            ```python
+            geoserver.get_coverage_index("my_coverage", workspace="my_workspace", store="my_coverage_store")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coverages/{coverage}/index.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coverages/{name}/index.{format}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/index.{format}"
+            url = (
+                f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}/index.{format}"
+            )
 
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
-    def update_coverage(self, workspace: str, store: str, coverage: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_coverage(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str, store: str) -> str:
         """Update an individual coverage
 
         Args:
+            name: The name of the coverage.
+            body: The body of the request used to update the coverage.
             workspace: The name of the workspace.
             store: The name of the coverage datastore
-            coverage: The name of the coverage.
-            body: The body of the request used to update the coverage.
 
         Returns:
             Success message.
+
+        Example:
+            To update a coverage, use the following code:
+
+            ```python
+            # Check the GeoServer official documentation for the body structure
+            body = "..."
+
+            geoserver.update_coverage("my_coverage", body, workspace="my_workspace", store="my_coverage_store")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_coverage(self, workspace: str, store: str, coverage: str, *, recurse: bool = False) -> str:
+    def delete_coverage(self, name: str, *, workspace: str, store: str, recurse: bool = False) -> str:
         """Delete a coverage (optionally recursively deleting layers).
 
         Args:
+            name: The name of the coverage.
             workspace: The name of the workspace.
             store: The name of the coverage datastore
-            coverage: The name of the coverage.
             recurse: Optional. If true all stores containing the resource are also removed.
 
         Returns:
             Success message.
+
+        Example:
+            To delete a coverage, use the following code:
+
+            ```python
+            geoserver.delete_coverage("my_coverage", workspace="my_workspace", store="my_coverage_store")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}"
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
-    def reset_coverage_caches(self, workspace: str, store: str, coverage: str) -> str:
+    def reset_coverage_caches(self, name: str, *, workspace: str, store: str) -> str:
         """Resets raster caches for this coverage.
         This operation is used to force GeoServer to drop caches associated to this coverage,
         and reconnect to the raster source the next time it is needed by a request.
@@ -650,27 +777,34 @@ class GeoServer(Base):
         in case of need it should be modified issuing a PUT request against the coverage resource itself.
 
         Args:
+            name: The name of the coverage.
             workspace: The name of the workspace.
             store: The name of the coverage datastore
-            coverage: The name of the coverage.
 
         Returns:
             Success message.
+
+        Example:
+            To reset the caches of a coverage, use the following code:
+
+            ```python
+            geoserver.reset_coverage_caches("my_coverage", workspace="my_workspace", store="my_coverage_store")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/reset"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}/reset"
         self._request(method="put", url=url)  # NOTE: Can also be a POST
         return OK_MESSAGE
 
     # Coverage Stores
 
     @overload
-    def get_coverage_stores(self, workspace: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_coverage_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_coverage_stores(self, workspace: str, *, format: Literal["xml"]) -> str: ...
+    def get_coverage_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
     def get_coverage_stores(
-        self, workspace: str, *, format: Literal["json", "xml"] = "json"
+        self, *, workspace: str, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Displays a list of all styles on the server.
 
@@ -680,34 +814,61 @@ class GeoServer(Base):
 
         Returns:
             The list of all coverage stores in the workspace.
+
+        Example:
+            To get the list of all coverage stores in a workspace, use the following code:
+
+            ```python
+            geoserver.get_coverage_stores(workspace="my_workspace")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def coveragestore_exists(self, workspace: str, store: str) -> bool:
+    def coveragestore_exists(self, name: str, *, workspace: str) -> bool:
         """Check if a coverage store exists in a workspace.
 
         Args:
+            name: The name of the coverage store.
             workspace: The name of the workspace containing the coverage stores.
-            store: The name of the coverage store.
 
         Returns:
             True if the coverage store exists, False otherwise.
+
+        Example:
+            To check if a coverage store exists in a workspace, use the following code:
+
+            ```python
+            geoserver.coveragestore_exists("my_coverage_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}.xml"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}.xml"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_coverage_store(self, workspace: str, body: Union[str, Dict[str, Any]]) -> str:
+    def create_coverage_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Adds a new coverage store.
 
+        Warning:
+            It is preferred to use the `upload_coverage_store` method to upload a new coverage store.
+
         Args:
-            workspace: The name of the workspace.
             body: The body of the request used to create the coverage store.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
+
+        Example:
+            To create a new coverage store, use the following code:
+
+            ```python
+            # Check the GeoServer official documentation for the body structure
+            body = "..."
+
+            geoserver.create_coverage_store(body, workspace="my_workspace")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores"
         self._request(method="post", url=url, body=body)
@@ -716,10 +877,10 @@ class GeoServer(Base):
     # TODO: Update docs
     def upload_coverage_store(
         self,
-        workspace: str,
         file: Union[str, Path, BufferedReader],
         *,
-        store: Optional[str] = None,
+        workspace: str,
+        name: Optional[str] = None,
         method: Literal["auto", "file", "external", "url", "remote"] = "auto",
         format: Literal["geotiff", "worldimage", "imagemosaic"],
         update_bbox: bool = False,
@@ -729,6 +890,9 @@ class GeoServer(Base):
         filename: Optional[str] = None,
     ) -> str:
         """Adds a new or update an existing coverage store from a local file.
+
+        Tip:
+            This method is the preferred way to upload a new coverage store.
 
         Note:
             The `store` parameter is automatically inferred from the file, if not provided.
@@ -741,9 +905,9 @@ class GeoServer(Base):
                 the file name will be the same as the store name.
 
         Args:
-            workspace: The name of the workspace.
             file: The file to upload.
-            store: Optional. The name of the coverage store.
+            workspace: The name of the workspace.
+            name: Optional. The name of the coverage store.
             filename:  Optional. The filename parameter specifies the target file name for a file that needs to be harvested as part of a mosaic.
                 This is important to avoid clashes and to make sure the right dimension values are available in the name for multidimensional mosaics to work.
                 Only used if method="file".
@@ -752,15 +916,29 @@ class GeoServer(Base):
 
         Returns:
             Success message.
+
+        Example:
+            To upload a new coverage store from a local file, use the following code:
+
+            ```python
+            geoserver.upload_coverage_store("my_coverage_store.zip", workspace="my_workspace", name="my_coverage_store", format="geotiff")
+            ```
+
+            Or, using a buffer:
+
+            ```python
+            with open("my_coverage_store.zip", "rb") as f:
+                geoserver.upload_coverage_store(f, workspace="my_workspace", name="my_coverage_store", format="geotiff")
+            ```
         """
         if isinstance(file, Path):
             file = file.as_posix()
         if isinstance(file, str):
-            store = store or Path(file).stem
-            filename = filename or f"{store}.{Path(file).suffix[1:]}"
+            name = name or Path(file).stem
+            filename = filename or f"{name}.{Path(file).suffix[1:]}"
 
-        if store is None:
-            raise ValueError("store is required")
+        if name is None:
+            raise ValueError("The `name` parameter is required")
 
         headers = {}
         if zipfile.is_zipfile(file):
@@ -782,65 +960,82 @@ class GeoServer(Base):
 
         if isinstance(file, str) and method in ["external", "url", "remote"]:
             headers["Content-Type"] = "text/plain"
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/{method}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/{method}.{format}"
             self._request(method="put", url=url, data=file, params=params, headers=headers)
             return CREATED_MESSAGE
 
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/file.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/file.{format}"
         self._request(method="put", url=url, file=file, params=params, headers=headers)
         return CREATED_MESSAGE
 
     @overload
     def get_coverage_store(
-        self, workspace: str, store: str, *, quiet_on_not_found: bool = False, format: Literal["json"] = "json"
+        self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
     def get_coverage_store(
-        self, workspace: str, store: str, *, quiet_on_not_found: bool = False, format: Literal["xml"]
+        self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["xml"]
     ) -> str: ...
 
     def get_coverage_store(
-        self, workspace: str, store: str, *, quiet_on_not_found: bool = False, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Get an individual coverage store.
 
         Args:
+            name: The name of the coverage store.
             workspace: The name of the workspace.
-            store: The name of the coverage store.
             quiet_on_not_found: Optional. If true, the server will not report an error if the coverage store is not found.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The requested coverage store.
+
+        Example:
+            To get a coverage store, use the following code:
+
+            ```python
+            geoserver.get_coverage_store("my_coverage_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}.{format}"
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json()
 
-    def update_coverage_store(self, workspace: str, store: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_coverage_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Modifies a single coverage store.
 
         Args:
-            workspace: The name of the workspace.
-            store: The name of the coverage store.
+            name: The name of the coverage store.
             body: The body of the request used to update the coverage store.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
+
+        Example:
+            To update a coverage store, use the following code:
+
+            ```python
+            # Check the GeoServer official documentation for the body structure
+            body = "..."
+
+            geoserver.update_coverage_store("my_coverage_store", body, workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
     def delete_coverage_store(
-        self, workspace: str, store: str, *, purge: Literal["none", "metadata", "all"] = "all", recurse: bool = False
+        self, name: str, *, workspace: str, purge: Literal["none", "metadata", "all"] = "all", recurse: bool = False
     ) -> str:
         """Deletes a coverage store.
 
         Args:
+            name: The name of the coverage store.
             workspace: The name of the workspace.
-            store: The name of the coverage store.
             purge: Optional. The purge parameter specifies if and how the underlying raster data source is deleted.
                 When set to "none" data and auxiliary files are preserved.
                 When set to "metadata" delete only auxiliary files and metadata.
@@ -853,13 +1048,26 @@ class GeoServer(Base):
 
         Returns:
             Success message.
+
+        Example:
+            To delete a coverage store, use the following code:
+
+            ```python
+            geoserver.delete_coverage_store("my_coverage_store", workspace="my_workspace")
+            ```
+
+            To remove all resources contained in the store, use the following code:
+
+            ```python
+            geoserver.delete_coverage_store("my_coverage_store", workspace="my_workspace", recurse=True)
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}"
         params = dict(purge=purge, recurse=recurse)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
-    def reset_coverage_store_caches(self, workspace: str, store: str) -> str:
+    def reset_coverage_store_caches(self, name: str, *, workspace: str) -> str:
         """Resets raster caches for this coverage store.
         This operation is used to force GeoServer to drop caches associated to this coverage store,
         and reconnect to the raster source the next time it is needed by a request.
@@ -867,13 +1075,20 @@ class GeoServer(Base):
         coordinate system and image structure that might have changed in the meantime.
 
         Args:
+            name: The name of the coverage store.
             workspace: The name of the workspace.
-            store: The name of the coverage store.
 
         Returns:
             Success message.
+
+        Example:
+            To reset the caches of a coverage store, use the following code:
+
+            ```python
+            geoserver.reset_coverage_store_caches("my_coverage_store", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/reset"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/reset"
         self._request(method="put", url=url)
         return OK_MESSAGE
 
@@ -881,14 +1096,14 @@ class GeoServer(Base):
 
     @overload
     def get_feature_types(
-        self, workspace: str, *, store: Optional[str] = None, format: Literal["json"] = "json"
+        self, *, workspace: str, store: Optional[str] = None, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
-    def get_feature_types(self, workspace: str, *, store: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_feature_types(self, *, workspace: str, store: Optional[str] = None, format: Literal["xml"]) -> str: ...
 
     def get_feature_types(
-        self, workspace: str, *, store: Optional[str] = None, format: Literal["json", "xml"] = "json"
+        self, *, workspace: str, store: Optional[str] = None, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """List all feature types in the workspace.
 
@@ -899,6 +1114,13 @@ class GeoServer(Base):
 
         Returns:
             The list of all feature types in the workspace.
+
+        Example:
+            To get the list of all feature types in a workspace, use the following code:
+
+            ```python
+            geoserver.get_feature_types(workspace="my_workspace")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes.{format}"
         if store is not None:
@@ -908,7 +1130,7 @@ class GeoServer(Base):
         return response.json() if format == "json" else response.text
 
     def create_feature_type(
-        self, workspace: str, body: Union[str, Dict[str, Any]], *, store: Optional[str] = None
+        self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
     ) -> str:
         """Create a new feature type.
         Note: When creating a new feature type via POST,
@@ -918,12 +1140,22 @@ class GeoServer(Base):
         in the feature type representation.
 
         Args:
+            body: The body of the request used to create the feature type.
             workspace: The name of the workspace.
             store: The name of the data store.
-            body: The body of the request used to create the feature type.
 
         Returns:
             Success message.
+
+        Example:
+            To create a new feature type, use the following code:
+
+            ```python
+            # Check the GeoServer official documentation for the body structure
+            body = "..."
+
+            geoserver.create_feature_type(body, workspace="my_workspace", store="my_data_store")
+            ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes"
         if store is not None:
@@ -935,9 +1167,9 @@ class GeoServer(Base):
     @overload
     def get_feature_type(
         self,
-        workspace: str,
-        feature_type: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
@@ -946,9 +1178,9 @@ class GeoServer(Base):
     @overload
     def get_feature_type(
         self,
-        workspace: str,
-        feature_type: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
@@ -956,9 +1188,9 @@ class GeoServer(Base):
 
     def get_feature_type(
         self,
-        workspace: str,
-        feature_type: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
@@ -966,37 +1198,44 @@ class GeoServer(Base):
         """Get an individual feature type.
 
         Args:
+            name: The name of the feature type.
             workspace: The name of the workspace.
-            feature_type: The name of the feature type.
             store: Optional. The name of the data store.
             quiet_on_not_found: Optional. If true, the server will not report an error if the feature type is not found.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The requested feature type.
+
+        Example:
+            To get a feature type, use the following code:
+
+            ```python
+            geoserver.get_feature_type("my_feature_type", workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{name}.{format}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{name}.{format}"
 
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
     def update_feature_type(
         self,
-        workspace: str,
-        feature_type: str,
+        name: str,
         body: Union[str, Dict[str, Any]],
         *,
+        workspace: str,
         store: Optional[str] = None,
         recalculate: Literal["", "nativebbox", "nativebbox,latlonbbox"] = "",
     ) -> str:
         """Update an individual feature type.
 
         Args:
-            workspace: The name of the workspace.
-            feature_type: The name of the feature type.
+            name: The name of the feature type.
             body: The body of the request used to modify the feature type.
+            workspace: The name of the workspace.
             store: Optional. The name of the data store.
             recalculate: Optional. Specifies whether to recalculate properties for a feature type.
                 Some properties of feature types are automatically recalculated when necessary.
@@ -1016,38 +1255,61 @@ class GeoServer(Base):
 
         Returns:
             Success message.
+
+        Example:
+            To update a feature type, use the following code:
+
+            ```python
+            # Check the GeoServer official documentation for the body structure
+            body = "..."
+
+            geoserver.update_feature_type("my_feature_type", body, workspace="my_workspace")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{name}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{name}"
 
         params = dict(recalculate=recalculate)
         self._request(method="put", url=url, body=body, params=params)
         return UPDATED_MESSAGE
 
     def delete_feature_type(
-        self, workspace: str, feature_type: str, *, store: Optional[str] = None, recurse: bool = False
+        self, name: str, *, workspace: str, store: Optional[str] = None, recurse: bool = False
     ) -> str:
         """Delete an individual feature type.
 
         Args:
+            name: The name of the feature type.
             workspace: The name of the workspace.
-            feature_type: The name of the feature type.
             store: Optional. The name of the data store.
             recurse: Optional. If true, all resources contained in the store are also removed.
 
         Returns:
             Success message.
+
+        Example:
+            To delete a feature type, use the following code:
+
+            ```python
+            geoserver.delete_feature_type("my_feature_type", workspace="my_workspace")
+            ```
+
+            To also remove all associated resources, use the following code:
+
+            ```python
+            geoserver.delete_feature_type("my_feature_type", workspace="my_workspace", recurse=True)
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{name}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{name}"
 
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
-    def reset_feature_type_caches(self, workspace: str, feature_type: str, *, store: Optional[str] = None) -> str:
+    def reset_feature_type_caches(self, name: str, *, workspace: str, store: Optional[str] = None) -> str:
         """Resets caches for this feature type.
         This operation is used to force GeoServer to drop caches associated to this feature type,
         and reconnect to the vector source the next time it is needed by a request.
@@ -1055,16 +1317,29 @@ class GeoServer(Base):
         and the structure of the feature types it's serving.
 
         Args:
+            name: The name of the feature type.
             workspace: The name of the workspace.
-            feature_type: The name of the feature type.
             store: Optional. The name of the data store.
 
         Returns:
             Success message.
+
+        Example:
+            To reset the caches of a feature type, use the following code:
+
+            ```python
+            geoserver.reset_feature_type_caches("my_feature_type", workspace="my_workspace")
+            ```
+
+            To specify a data store, use the following code:
+
+            ```python
+            geoserver.reset_feature_type_caches("my_feature_type", workspace="my_workspace", store="my_data_store")
+            ```
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{feature_type}/reset"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{name}/reset"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{feature_type}/reset"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{name}/reset"
 
         self._request(method="put", url=url)
         return OK_MESSAGE
@@ -1086,6 +1361,13 @@ class GeoServer(Base):
 
         Returns:
             The list of all fonts available to GeoServer.
+
+        Example:
+            To get the list of all fonts available to GeoServer, use the following code:
+
+            ```python
+            geoserver.get_fonts()
+            ```
         """
         url = f"{self.service_url}/rest/fonts.{format}"
         response = self._request(method="get", url=url)
@@ -1112,6 +1394,13 @@ class GeoServer(Base):
 
         Returns:
             The list of all layer groups in the workspace.
+
+        Example:
+            To get the list of all layer groups, use the following code:
+
+            ```python
+            geoserver.get_layer_groups()
+            ```
         """
         url = f"{self.service_url}/rest/layergroups.{format}"
         if workspace is not None:
@@ -1120,19 +1409,19 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def layer_group_exists(self, layer_group: str, *, workspace: Optional[str] = None) -> bool:
+    def layer_group_exists(self, name: str, *, workspace: Optional[str] = None) -> bool:
         """Check if a layer group exists.
 
         Args:
-            layer_group: The name of the layer group.
+            name: The name of the layer group.
             workspace: Optional. The name of the workspace.
 
         Returns:
             True if the layer group exists, False otherwise.
         """
-        url = f"{self.service_url}/rest/layergroups/{layer_group}.xml"
+        url = f"{self.service_url}/rest/layergroups/{name}.xml"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{layer_group}.xml"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{name}.xml"
 
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
@@ -1157,7 +1446,7 @@ class GeoServer(Base):
     @overload
     def get_layer_group(
         self,
-        layer_group: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -1167,7 +1456,7 @@ class GeoServer(Base):
     @overload
     def get_layer_group(
         self,
-        layer_group: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -1176,7 +1465,7 @@ class GeoServer(Base):
 
     def get_layer_group(
         self,
-        layer_group: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -1185,7 +1474,7 @@ class GeoServer(Base):
         """Get an individual layer group.
 
         Args:
-            layer_group: The name of the layer group.
+            name: The name of the layer group.
             workspace: Optional. The name of the workspace.
             quiet_on_not_found: Optional. If true, the server will not report an error if the layer group is not found.
             format: Optional. The format of the response. It can be either "json" or "xml".
@@ -1193,46 +1482,46 @@ class GeoServer(Base):
         Returns:
             The requested layer group.
         """
-        url = f"{self.service_url}/rest/layergroups/{layer_group}.{format}"
+        url = f"{self.service_url}/rest/layergroups/{name}.{format}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{layer_group}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{name}.{format}"
 
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
     def update_layer_group(
-        self, layer_group: str, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None
+        self, name: str, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None
     ) -> str:
         """Update an individual layer group.
 
         Args:
-            layer_group: The name of the layer group.
+            name: The name of the layer group.
             body: The body of the request used to modify the layer group.
             workspace: Optional. The name of the workspace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/layergroups/{layer_group}"
+        url = f"{self.service_url}/rest/layergroups/{name}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{layer_group}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{name}"
 
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_layer_group(self, layer_group: str, *, workspace: Optional[str] = None) -> str:
+    def delete_layer_group(self, name: str, *, workspace: Optional[str] = None) -> str:
         """Delete an individual layer group.
 
         Args:
-            layer_group: The name of the layer group.
+            name: The name of the layer group.
             workspace: Optional. The name of the workspace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/layergroups/{layer_group}"
+        url = f"{self.service_url}/rest/layergroups/{name}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{layer_group}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layergroups/{name}"
 
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
@@ -1284,7 +1573,7 @@ class GeoServer(Base):
     @overload
     def get_layer(
         self,
-        layer: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -1294,7 +1583,7 @@ class GeoServer(Base):
     @overload
     def get_layer(
         self,
-        layer: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -1303,7 +1592,7 @@ class GeoServer(Base):
 
     def get_layer(
         self,
-        layer: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         quiet_on_not_found: bool = False,
@@ -1312,7 +1601,7 @@ class GeoServer(Base):
         """Get an individual layer.
 
         Args:
-            layer: The name of the layer.
+            name: The name of the layer.
             workspace: Optional. The name of the workspace.
             quiet_on_not_found: Optional. If true, the server will not report an error if the layer is not found.
             format: Optional. The format of the response. It can be either "json" or "xml".
@@ -1320,44 +1609,44 @@ class GeoServer(Base):
         Returns:
             The requested layer.
         """
-        url = f"{self.service_url}/rest/layers/{layer}.{format}"
+        url = f"{self.service_url}/rest/layers/{name}.{format}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}.{format}"
 
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
-    def update_layer(self, layer: str, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_layer(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
         """Update an individual layer.
 
         Args:
-            workspace: The name of the workspace.
-            layer: The name of the layer.
+            name: The name of the layer.
             body: The body of the request used to modify the layer.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/layers/{layer}"
+        url = f"{self.service_url}/rest/layers/{name}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}"
 
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_layer(self, layer: str, *, workspace: Optional[str] = None) -> str:
+    def delete_layer(self, name: str, *, workspace: Optional[str] = None) -> str:
         """Delete an individual layer.
 
         Args:
+            name: The name of the layer.
             workspace: The name of the workspace.
-            layer: The name of the layer.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/layers/{layer}"
+        url = f"{self.service_url}/rest/layers/{name}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}"
 
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
@@ -1432,24 +1721,22 @@ class GeoServer(Base):
         return OK_MESSAGE
 
     @overload
-    def get_monitored_request(self, request_id: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_monitored_request(self, id: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_monitored_request(self, request_id: str, *, format: Literal["xml"]) -> str: ...
+    def get_monitored_request(self, id: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_monitored_request(
-        self, request_id: str, *, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    def get_monitored_request(self, id: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Returns the details of a single request.
 
         Args:
-            request_id: The id of the request to retrieve.
+            id: The id of the request to retrieve.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The monitoring request.
         """
-        url = f"{self.service_url}/rest/monitor/requests/{request_id}.{format}"
+        url = f"{self.service_url}/rest/monitor/requests/{id}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
@@ -1488,49 +1775,49 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_namespace(self, namespace: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_namespace(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_namespace(self, namespace: str, *, format: Literal["xml"]) -> str: ...
+    def get_namespace(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_namespace(self, namespace: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_namespace(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Get an individual namespace.
 
         Args:
-            namespace: The name of the namespace.
+            name: The name of the namespace.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The requested namespace.
         """
-        url = f"{self.service_url}/rest/namespaces/{namespace}.{format}"
+        url = f"{self.service_url}/rest/namespaces/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_namespace(self, namespace: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_namespace(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Update an individual namespace.
 
         Args:
-            namespace: The name of the namespace.
+            name: The name of the namespace.
             body: The body of the request used to modify the namespace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/namespaces/{namespace}"
+        url = f"{self.service_url}/rest/namespaces/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_namespace(self, namespace: str) -> str:
+    def delete_namespace(self, name: str) -> str:
         """Delete an individual namespace.
 
         Args:
-            namespace: The name of the namespace.
+            name: The name of the namespace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/namespaces/{namespace}"
+        url = f"{self.service_url}/rest/namespaces/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -1567,8 +1854,8 @@ class GeoServer(Base):
         """Update the WMS settings for the workspace.
 
         Args:
-            workspace: The name of the workspace.
             body: The body of the request used to modify the WMS settings.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
@@ -1840,17 +2127,17 @@ class GeoServer(Base):
 
     @overload
     def get_resource(
-        self, resource: str, *, operation: Literal["default", "metadata"] = "default", format: Literal["json"] = "json"
+        self, path: str, *, operation: Literal["default", "metadata"] = "default", format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
     def get_resource(
-        self, resource: str, *, operation: Literal["default", "metadata"] = "default", format: Literal["xml"]
+        self, path: str, *, operation: Literal["default", "metadata"] = "default", format: Literal["xml"]
     ) -> str: ...
 
     def get_resource(
         self,
-        resource: str,
+        path: str,
         *,
         operation: Literal["default", "metadata"] = "default",
         format: Literal["json", "xml"] = "json",
@@ -1860,7 +2147,7 @@ class GeoServer(Base):
         With operation=default, if the request is made against a non-directory resource, the content of the resource is returned.
 
         Args:
-            resource: The path to the resource.
+            path: The path to the resource.
             operation: Optional. The type of resource to get. It can be either "default" or "metadata". Defaults to "default".
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
@@ -1872,49 +2159,49 @@ class GeoServer(Base):
             geoserver.get_resource(resource="styles/default_point.sld", operation="default")
             ```
         """
-        url = f"{self.service_url}/rest/resources/{resource}.{format}"
+        url = f"{self.service_url}/rest/resources/{path}.{format}"
         params = dict(operation=operation, format="json")
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def update_resource(self, resource: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_resource(self, path: str, body: Union[str, Dict[str, Any]]) -> str:
         """Upload/move/copy a resource, create directories on the fly (overwrite if exists). For move/copy operations, place source path in body. Copying is not supported for directories.
 
         Args:
-            resource: The path to the resource.
+            path: The path to the resource.
             body: The content of the resource to upload. In the case of a move or copy operation,
                 this is instead the path to the source resource to move/copy from.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/resources/{resource}"
+        url = f"{self.service_url}/rest/resources/{path}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_resource(self, resource: str) -> str:
+    def delete_resource(self, path: str) -> str:
         """Delete a resource (recursively if directory)
 
         Args:
-            resource: The full path to the resource. Required, but may be empty; a request to /resource references the top level resource directory.
+            path: The full path to the resource. Required, but may be empty; a request to /resource references the top level resource directory.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/resources/{resource}"
+        url = f"{self.service_url}/rest/resources/{path}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
-    def resource_exists(self, resource: str) -> bool:
+    def resource_exists(self, path: str) -> bool:
         """Check if a resource exists.
 
         Args:
-            resource: The full path to the resource.
+            path: The full path to the resource.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/resources/{resource}"
+        url = f"{self.service_url}/rest/resources/{path}"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
@@ -2296,37 +2583,37 @@ class GeoServer(Base):
 
     @overload
     def get_coverage_granules(
-        self, workspace: str, store: str, coverage: str, *, format: Literal["json"] = "json"
+        self, name: str, *, workspace: str, store: str, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
-    def get_coverage_granules(self, workspace: str, store: str, coverage: str, *, format: Literal["xml"]) -> str: ...
+    def get_coverage_granules(self, name: str, *, workspace: str, store: str, format: Literal["xml"]) -> str: ...
 
     def get_coverage_granules(
-        self, workspace: str, store: str, coverage: str, *, limit: int = -1, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: str, store: str, limit: int = -1, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Displays a list of all the attributes associated to a particular coverage's granules
 
         Args:
+            name: The name of the coverage.
             workspace: The name of the workspace containing the coverage stores.
             store: The name of the store.
-            coverage: The name of the coverage.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The granules in the structured coverage store.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/index/granules.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}/index/granules.{format}"
         params = dict(limit=limit) if limit >= 0 else {}
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
     def delete_coverage_granules(
         self,
+        name: str,
+        *,
         workspace: str,
         store: str,
-        coverage: str,
-        *,
         filter: str = "",
         purge: Literal["none", "metadata", "all"] = "none",
         update_bbox: bool = False,
@@ -2334,9 +2621,9 @@ class GeoServer(Base):
         """Allows removing one or more granules from the index.
 
         Args:
+            name: The name of the coverage.
             workspace: The name of the workspace containing the coverage stores.
             store: The name of the store.
-            coverage: The name of the coverage.
             filter: Optional. A CQL filter to reduce the returned granules.
             purge: Optional. The purge parameter specifies if and how the underlying raster data source is deleted.
                 Allowable values for this parameter are `none`, `metadata` and `all`. When set to `none` data and auxiliary files are preserved,
@@ -2348,52 +2635,50 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = (
-            f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/index/granules"
-        )
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}/index/granules"
         params = dict(filter=filter, purge=purge, updateBBox=update_bbox)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
     @overload
     def get_coverages_granule(
-        self, workspace: str, store: str, coverage: str, granule: str, *, format: Literal["json"] = "json"
+        self, name: str, *, workspace: str, store: str, coverage: str, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
     def get_coverages_granule(
-        self, workspace: str, store: str, coverage: str, granule: str, *, format: Literal["xml"]
+        self, name: str, *, workspace: str, store: str, coverage: str, format: Literal["xml"]
     ) -> str: ...
 
     def get_coverages_granule(
-        self, workspace: str, store: str, coverage: str, granule: str, *, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: str, store: str, coverage: str, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Displays a list of all the attributes associated to a particular coverage's granule
 
         Args:
+            name: The ID of the granule.
             workspace: The name of the workspace containing the coverage stores.
             store: The name of the store.
             coverage: The name of the coverage.
-            granule: The ID of the granule.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The granule in the structured coverage store.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/granules/index/{granule}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/granules/index/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
     def delete_coverage_granule(
-        self, workspace: str, store: str, coverage: str, granule: str, purge: bool = False, update_bbox: bool = False
+        self, name: str, *, workspace: str, store: str, coverage: str, purge: bool = False, update_bbox: bool = False
     ) -> str:
         """Allows removing the specified granule.
 
         Args:
+            name: The ID of the granule.
             workspace: The name of the workspace containing the coverage stores.
             store: The name of the store.
             coverage: The name of the coverage.
-            granule: The ID of the granule.
             purge: Optional. The purge parameter specifies if and how the underlying raster data source is deleted.
                 Allowable values for this parameter are `none`, `metadata` and `all`. When set to `none` data and auxiliary files are preserved,
                 only the registration in the mosaic is removed When set to `metadata` delete only auxiliary files and metadata
@@ -2404,7 +2689,7 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/granules/index/{granule}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{coverage}/granules/index/{name}"
         params = dict(purge=purge, updateBBox=update_bbox)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
@@ -2436,47 +2721,47 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def style_exists(self, style: str, *, workspace: Optional[str] = None) -> bool:
+    def style_exists(self, name: str, *, workspace: Optional[str] = None) -> bool:
         """Check if a style exists.
 
         Args:
-            style: The name of the style.
+            name: The name of the style.
             workspace: Optional. The name of the workspace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/styles/{style}.xml"
+        url = f"{self.service_url}/rest/styles/{name}.xml"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style}.xml"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}.xml"
 
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
     @overload
     def get_style(
-        self, style: str, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
+        self, name: str, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
-    def get_style(self, style: str, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_style(self, name: str, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
 
     def get_style(
-        self, style: str, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Retrieves a single style.
 
         Args:
-            style: The name of the style.
+            name: The name of the style.
             workspace: Optional. The name of the workspace.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/styles/{style}.{format}"
+        url = f"{self.service_url}/rest/styles/{name}.{format}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}.{format}"
 
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
@@ -2511,8 +2796,8 @@ class GeoServer(Base):
         self,
         file: Union[str, Path, BufferedReader],
         *,
+        name: str,
         workspace: Optional[str] = None,
-        style: str,
         overwrite: Literal[True],
     ) -> str: ...
 
@@ -2521,8 +2806,8 @@ class GeoServer(Base):
         self,
         file: Union[str, Path, BufferedReader],
         *,
+        name: Optional[str] = None,
         workspace: Optional[str] = None,
-        style: Optional[str] = None,
         overwrite: Literal[False] = False,
     ) -> str: ...
 
@@ -2530,14 +2815,14 @@ class GeoServer(Base):
         self,
         file: Union[str, Path, BufferedReader],
         *,
+        name: Optional[str] = None,
         workspace: Optional[str] = None,
-        style: Optional[str] = None,
         overwrite: bool = False,
     ) -> str:
         """Uploads a style.
 
         Note:
-            The `style` name must be provided if the `file` argument is not a file path.
+            The `name` parameter must be provided if the `file` argument is not a file path.
 
         Note:
             If overwriting a style, you must provide the `style` name.
@@ -2576,7 +2861,7 @@ class GeoServer(Base):
 
         """
         method: Literal["post", "put"] = "put" if overwrite else "post"
-        if overwrite and style is None:
+        if overwrite and name is None:
             raise ValueError("The `style` argument must be provided when overwrite is `True`")
 
         # Upload from a zip file
@@ -2584,42 +2869,42 @@ class GeoServer(Base):
             headers = {"Content-Type": "application/zip"}
             url = f"{self.service_url}/rest/styles"
             if overwrite:
-                url = f"{self.service_url}/rest/styles/{style}.zip"
+                url = f"{self.service_url}/rest/styles/{name}.zip"
 
             _ = self._request(method=method, url=url, file=file, headers=headers)
             return CREATED_MESSAGE
 
         # Upload from a single SLD file
-        if style is None and isinstance(file, (str, Path)):
-            style = Path(file).stem
-        if style is None:
+        if name is None and isinstance(file, (str, Path)):
+            name = Path(file).stem
+        if name is None:
             raise ValueError("The `style` name must be provided, either as an argument or as the filename.")
 
         if not overwrite:
-            body = f"<style><name>{style}</name><filename>{style}.sld</filename></style>"
+            body = f"<style><name>{name}</name><filename>{name}.sld</filename></style>"
             _ = self.create_style(body=body, workspace=workspace)
 
         body = file.read().decode("utf-8") if isinstance(file, BufferedReader) else Path(file).read_text()
-        _ = self.update_style(style=style, body=body, workspace=workspace)
+        _ = self.update_style(name=name, body=body, workspace=workspace)
         return CREATED_MESSAGE
 
-    def update_style(self, style: str, body: str, *, workspace: Optional[str] = None) -> str:
+    def update_style(self, name: str, body: str, *, workspace: Optional[str] = None) -> str:
         """Updates a single style.
 
         Warning:
             This method only supports body in XML format.
 
         Args:
-            style: The name of the style.
+            name: The name of the style.
             body: The content of the updated style, in XML format.
             workspace: Optional. The name of the workspace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/styles/{style}"
+        url = f"{self.service_url}/rest/styles/{name}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}"
 
         # Automatically determine the content type based on the SLD version
         pattern = r'StyledLayerDescriptor[^>]*version="([^"]*)"'
@@ -2636,19 +2921,19 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body, headers={"Content-Type": content_type})
         return UPDATED_MESSAGE
 
-    def download_style(self, style: str, *, workspace: Optional[str] = None) -> str:
+    def download_style(self, name: str, *, workspace: Optional[str] = None) -> str:
         """Downloads a single style.
 
         Args:
-            style: The name of the style.
+            name: The name of the style.
             workspace: Optional. The name of the workspace.
 
         Returns:
             The style content.
         """
-        url = f"{self.service_url}/rest/styles/{style}.sld"
+        url = f"{self.service_url}/rest/styles/{name}.sld"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style}.sld"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}.sld"
 
         response = self._request(method="get", url=url)
         return response.text
@@ -2686,7 +2971,7 @@ class GeoServer(Base):
         return UPDATED_MESSAGE
 
     def delete_style(
-        self, style: str, *, workspace: Optional[str] = None, purge: bool = False, recurse: bool = False
+        self, name: str, *, workspace: Optional[str] = None, purge: bool = False, recurse: bool = False
     ) -> str:
         """Deletes a single style.
 
@@ -2699,9 +2984,9 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/styles/{style}"
+        url = f"{self.service_url}/rest/styles/{name}"
         if workspace is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{style}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}"
 
         params = dict(purge=purge, recurse=recurse)
         self._request(method="delete", url=url, params=params)
@@ -2723,6 +3008,9 @@ class GeoServer(Base):
         self, *, workspace: Optional[str] = None, store: Optional[str] = None, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Displays a list of all templates on the server.
+
+        Note:
+            You can check the official documentation [here](https://docs.geoserver.org/stable/en/api/#1.0.0/templates.yaml)
 
         Args:
             workspace: Optional. The name of the workspace.
@@ -2746,7 +3034,7 @@ class GeoServer(Base):
 
     def get_template(
         self,
-        template: str,
+        name: str,
         *,
         workspace: Optional[str] = None,
         data_store: Optional[str] = None,
@@ -2757,7 +3045,7 @@ class GeoServer(Base):
         """Displays a list of all templates on the server.
 
         Args:
-            template: The name of the template.
+            name: The name of the template.
             workspace: Optional. The name of the workspace.
             data_store: Optional. The name of the datastore.
             feature_type: Optional. The name of the featuretype.
@@ -2774,7 +3062,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/templates/{name}.ftl"
         if (
             workspace is not None
             and data_store is None
@@ -2782,7 +3070,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is not None
@@ -2790,7 +3078,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is not None
@@ -2798,7 +3086,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is None
@@ -2806,7 +3094,7 @@ class GeoServer(Base):
             and coverage_store is not None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is None
@@ -2814,7 +3102,7 @@ class GeoServer(Base):
             and coverage_store is not None
             and coverage is not None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{name}.ftl"
         else:
             raise ValueError(
                 f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {data_store}, and {feature_type}."
@@ -2825,8 +3113,9 @@ class GeoServer(Base):
 
     def create_template(
         self,
-        template: str,
+        name: str,
         body: str,
+        *,
         workspace: Optional[str] = None,
         data_store: Optional[str] = None,
         feature_type: Optional[str] = None,
@@ -2837,9 +3126,13 @@ class GeoServer(Base):
         Overwrites any existing template with the same name and location.
 
         Args:
-            template: The name of the template.
+            name: The name of the template.
             body: The body of the request used to modify the template.
-            workspace: The name of the workspace.
+            workspace: Optional. The name of the workspace.
+            data_store: Optional. The name of the datastore.
+            feature_type: Optional. The name of the featuretype.
+            coverage_store: Optional. The name of the coveragestore.
+            coverage: Optional. The name of the coverage.
 
         Returns:
             Success message.
@@ -2851,7 +3144,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/templates/{name}.ftl"
         if (
             workspace is not None
             and data_store is None
@@ -2859,7 +3152,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is not None
@@ -2867,7 +3160,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is not None
@@ -2875,7 +3168,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is None
@@ -2883,7 +3176,7 @@ class GeoServer(Base):
             and coverage_store is not None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is None
@@ -2891,7 +3184,7 @@ class GeoServer(Base):
             and coverage_store is not None
             and coverage is not None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{name}.ftl"
         else:
             raise ValueError(
                 f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {data_store}, and {feature_type}."
@@ -2903,7 +3196,8 @@ class GeoServer(Base):
 
     def delete_template(
         self,
-        template: str,
+        name: str,
+        *,
         workspace: Optional[str] = None,
         data_store: Optional[str] = None,
         feature_type: Optional[str] = None,
@@ -2913,7 +3207,12 @@ class GeoServer(Base):
         """Deletes a single template registered for use on the server.
 
         Args:
-            template: The name of the template.
+            name: The name of the template.
+            workspace: Optional. The name of the workspace.
+            data_store: Optional. The name of the datastore.
+            feature_type: Optional. The name of the featuretype.
+            coverage_store: Optional. The name of the coveragestore.
+            coverage: Optional. The name of the coverage.
 
         Returns:
             Success message.
@@ -2925,7 +3224,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/templates/{name}.ftl"
         if (
             workspace is not None
             and data_store is None
@@ -2933,7 +3232,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is not None
@@ -2941,7 +3240,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is not None
@@ -2949,7 +3248,7 @@ class GeoServer(Base):
             and coverage_store is None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{data_store}/featuretypes/{feature_type}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is None
@@ -2957,7 +3256,7 @@ class GeoServer(Base):
             and coverage_store is not None
             and coverage is None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/templates/{name}.ftl"
         elif (
             workspace is not None
             and data_store is None
@@ -2965,7 +3264,7 @@ class GeoServer(Base):
             and coverage_store is not None
             and coverage is not None
         ):
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{template}.ftl"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{coverage_store}/coverages/{coverage}/templates/{name}.ftl"
         else:
             raise ValueError(
                 f"Invalid combinations of workspace, store, and featuretype. Got {workspace}, {data_store}, and {feature_type}."
@@ -3000,25 +3299,6 @@ class GeoServer(Base):
             ```python
             geoserver.get_transforms()
             ```
-
-            The output will be similar to the following:
-
-            ```json
-            {
-                "transforms": {
-                    "transform": [
-                        {
-                            "name": "test",
-                            "href": "http://localhost:8080/geoserver/restng/services/wfs/transforms/test.json"
-                        },
-                        {
-                            "name": "test1",
-                            "href": "http://localhost:8080/geoserver/restng/services/wfs/transforms/test1.json"
-                        }
-                    ]
-                }
-            }
-            ```
         """
         url = f"{self.service_url}/rest/services/wfs/transforms.{format}"
         response = self._request(method="get", url=url)
@@ -3027,6 +3307,7 @@ class GeoServer(Base):
     def create_wfs_transform(
         self,
         body: Union[str, Dict[str, Any]],
+        *,
         name: Optional[str] = None,
         source_format: Optional[str] = None,
         output_format: Optional[str] = None,
@@ -3052,15 +3333,17 @@ class GeoServer(Base):
             To add a new transform to the server, you can use the following code:
 
             ```python
-            geoserver.create_transform(
-                body={"name": "test", "sourceFormat": "GML2", "outputFormat": "text/xml", "outputMimeType": "text/xml", "fileExtension": "xml"}
-            )
-            ```
+            body = \"\"\"
+            <transform>
+                <name>test</name>
+                <sourceFormat>GML2</sourceFormat>
+                <outputFormat>text/xml</outputFormat>
+                <outputMimeType>text/xml</outputMimeType>
+                <fileExtension>xml</fileExtension>
+            </transform>
+            \"\"\"
 
-            The output will be similar to the following:
-
-            ```console
-            "Created"
+            geoserver.create_transform(body)
             ```
         """
         url = f"{self.service_url}/rest/services/wfs/transforms"
@@ -3075,21 +3358,19 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_wfs_transform(self, transform: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wfs_transform(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_wfs_transform(self, transform: str, *, format: Literal["xml"]) -> str: ...
+    def get_wfs_transform(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_wfs_transform(
-        self, transform: str, *, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    def get_wfs_transform(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Retrieves a single transformation.
 
         Note:
             Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
 
         Args:
-            transform: The name of the transform.
+            name: The name of the transform.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
@@ -3101,32 +3382,19 @@ class GeoServer(Base):
             ```python
             geoserver.get_transform(transform="test1")
             ```
-
-            The output will be similar to the following:
-
-            ```json
-            {
-                "transform": {
-                    "name": "test1",
-                    "sourceFormat": "text/xml; subtype=gml/2.1.2",
-                    "outputFormat": "text/html",
-                    "xslt": "test1.xslt"
-                }
-            }
-            ```
         """
-        url = f"{self.service_url}/rest/services/wfs/transforms/{transform}.{format}"
+        url = f"{self.service_url}/rest/services/wfs/transforms/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wfs_transform(self, transform: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_wfs_transform(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies a single transform.
 
         Note:
             Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
 
         Args:
-            transform: The name of the transform.
+            name: The name of the transform.
             body: The body of the request used to modify the transform.
 
         Returns:
@@ -3136,26 +3404,23 @@ class GeoServer(Base):
             To update a single transformation, you can use the following code:
 
             ```python
-            body = {
-                "name": "test1",
-                "sourceFormat": "text/xml; subtype=gml/2.1.2",
-                "outputFormat": "text/html",
-                "xslt": "test1.xslt"
-            }
+            body = \"\"\"
+            <transform>
+                <name>test1</name>
+                <sourceFormat>text/xml; subtype=gml/2.1.2</sourceFormat>
+                <outputFormat>text/html</outputFormat>
+                <xslt>test1.xslt</xslt>
+            </transform>
+            \"\"\"
+
             geoserver.update_transform(transform="test1", body=body)
             ```
-
-            The output will be similar to the following:
-
-            ```console
-            "OK"
-            ```
         """
-        url = f"{self.service_url}/rest/services/wfs/transforms/{transform}"
+        url = f"{self.service_url}/rest/services/wfs/transforms/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wfs_transform(self, transform: str) -> str:
+    def delete_wfs_transform(self, name: str) -> str:
         """Deletes a single transform.
 
         Note:
@@ -3173,14 +3438,8 @@ class GeoServer(Base):
             ```python
             geoserver.delete_transform(transform="test1")
             ```
-
-            The output will be similar to the following:
-
-            ```console
-            "OK"
-            ```
         """
-        url = f"{self.service_url}/rest/services/wfs/transforms/{transform}"
+        url = f"{self.service_url}/rest/services/wfs/transforms/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -3189,9 +3448,9 @@ class GeoServer(Base):
     @overload
     def get_wms_layers(
         self,
-        workspace: str,
         *,
-        wms_store: Optional[str] = None,
+        workspace: str,
+        store: Optional[str] = None,
         list: Optional[Literal["available"]] = None,
         format: Literal["json"] = "json",
     ) -> Dict[str, Any]: ...
@@ -3199,18 +3458,18 @@ class GeoServer(Base):
     @overload
     def get_wms_layers(
         self,
-        workspace: str,
         *,
-        wms_store: Optional[str] = None,
+        workspace: str,
+        store: Optional[str] = None,
         list: Optional[Literal["available"]] = None,
         format: Literal["xml"],
     ) -> str: ...
 
     def get_wms_layers(
         self,
-        workspace: str,
         *,
-        wms_store: Optional[str] = None,
+        workspace: str,
+        store: Optional[str] = None,
         list: Optional[Literal["available"]] = None,
         format: Literal["json", "xml"] = "json",
     ) -> Union[str, Dict[str, Any]]:
@@ -3218,7 +3477,7 @@ class GeoServer(Base):
 
         Args:
             workspace: The name of the workspace.
-            wms_store: Optional. Name of the wms store.
+            store: Optional. Name of the wms store.
             list: Optional. Set `list=available` to see all possible layers in the store, not just ones currently published.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
@@ -3226,29 +3485,27 @@ class GeoServer(Base):
             The WMS layers.
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers.{format}"
-        if wms_store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{wms_store}/wmslayers.{format}"
+        if store is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers.{format}"
 
         params = dict(list=list)
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def create_wms_layer(
-        self, workspace: str, body: Union[str, Dict[str, Any]], *, wms_store: Optional[str] = None
-    ) -> str:
+    def create_wms_layer(self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None) -> str:
         """Creates a new WMS layer.
 
         Args:
             workspace: The name of the workspace.
             body: The body of the request used to create the WMS layer.
-            wms_store: Optional. Name of the wms store.
+            store: Optional. Name of the wms store.
 
         Returns:
             Success message.
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers"
-        if wms_store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{wms_store}/wmslayers"
+        if store is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers"
 
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
@@ -3256,10 +3513,10 @@ class GeoServer(Base):
     @overload
     def get_wms_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         *,
-        wms_store: Optional[str] = None,
+        workspace: str,
+        store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
     ) -> Dict[str, Any]: ...
@@ -3267,29 +3524,29 @@ class GeoServer(Base):
     @overload
     def get_wms_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         *,
-        wms_store: Optional[str] = None,
+        workspace: str,
+        store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
 
     def get_wms_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         *,
-        wms_store: Optional[str] = None,
+        workspace: str,
+        store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
     ) -> Union[str, Dict[str, Any]]:
         """Retrieves a single WMS layer.
 
         Args:
+            name: The name of the wms layer.
             workspace: The name of the workspace.
-            layer: The name of the layer.
-            wms_store: Optional. Name of the wms store.
+            store: Optional. Name of the wms store.
             quiet_on_not_found: Optional. When set to "true", will not log an exception when the style is not present.
                 The 404 status code will still be returned.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
@@ -3297,9 +3554,9 @@ class GeoServer(Base):
         Returns:
             The WMS layer.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{layer}.{format}"
-        if wms_store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{wms_store}/wmslayers/{layer}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{name}.{format}"
+        if store is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers/{name}.{format}"
 
         params = dict(quietOnNotFound=quiet_on_not_found)
         response = self._request(method="get", url=url, params=params)
@@ -3307,10 +3564,10 @@ class GeoServer(Base):
 
     def update_wms_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         body: Union[str, Dict[str, Any]],
         *,
+        workspace: str,
         store: Optional[str] = None,
         calculate: Optional[List[str]] = None,
     ) -> str:
@@ -3320,9 +3577,9 @@ class GeoServer(Base):
             Refer to the [GeoServer documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/wmslayers.yaml) for more information.
 
         Args:
-            workspace: The name of the workspace.
-            layer: The name of the layer.
+            name: The name of the layer.
             body: The body of the request used to modify the WMS layer.
+            workspace: The name of the workspace.
             calculate: Specifies whether to recalculate any bounding boxes for a wms layer.
                 Some properties are automatically recalculated when necessary.
                 In particular, the native bounding box is recalculated when the projection or projection policy are changed,
@@ -3341,31 +3598,29 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{layer}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{name}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers/{layer}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers/{name}"
 
         params = dict(calculate=calculate)
         self._request(method="put", url=url, body=body, params=params)
         return UPDATED_MESSAGE
 
-    def delete_wms_layer(
-        self, workspace: str, layer: str, *, store: Optional[str] = None, recurse: bool = False
-    ) -> str:
+    def delete_wms_layer(self, name: str, *, workspace: str, store: Optional[str] = None, recurse: bool = False) -> str:
         """Deletes a single WMS layer.
 
         Args:
+            name: The name of the layer.
             workspace: The name of the workspace.
-            layer: The name of the layer.
             recurse: Recursively deletes all layers referenced by the specified wmslayer.
                 A request with `recurse=false` will fail if any layers reference the wmslayer.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{layer}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{name}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers/{layer}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers/{name}"
 
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
@@ -3374,12 +3629,12 @@ class GeoServer(Base):
     # WMS Stores
 
     @overload
-    def get_wms_stores(self, workspace: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wms_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_wms_stores(self, workspace: str, *, format: Literal["xml"]) -> str: ...
+    def get_wms_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_wms_stores(self, workspace: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_wms_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Retrieves the WMS stores available on the server.
 
         Args:
@@ -3393,12 +3648,12 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_wms_store(self, workspace: str, body: Union[str, Dict[str, Any]]) -> str:
+    def create_wms_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Creates a new WMS store.
 
         Args:
-            workspace: The name of the workspace.
             body: The body of the request used to create the WMS store.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
@@ -3407,19 +3662,14 @@ class GeoServer(Base):
             To add a new WMS store to the server, you can use the following code:
 
             ```python
-            body = {
-                "wmsStore": {
-                    "name": "remote",
-                    "capabilitiesUrl": "http://demo.geoserver.org/geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities"
-                }
-            }
+            body = \"\"\"
+            <wmsStore>
+                <name>remote</name>
+                <capabilitiesUrl>http://demo.geoserver.org/geoserver/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities</capabilitiesUrl>
+            </wmsStore>
+            \"\"\"
+
             geoserver.create_wms_store(workspace="test", body=body)
-            ```
-
-            The output will be similar to the following:
-
-            ```console
-            "Created"
             ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores"
@@ -3427,54 +3677,54 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_wms_store(self, workspace: str, store: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wms_store(self, name: str, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_wms_store(self, workspace: str, store: str, *, format: Literal["xml"]) -> str: ...
+    def get_wms_store(self, name: str, *, workspace: str, format: Literal["xml"]) -> str: ...
 
     def get_wms_store(
-        self, workspace: str, store: str, *, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: str, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Retrieves a single WMS store.
 
         Args:
+            name: The name of the WMS store.
             workspace: The name of the workspace.
-            store: The name of the WMS store.
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
         Returns:
             The WMS store.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wms_store(self, workspace: str, store: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_wms_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Modifies a single WMS store.
 
         Args:
+            name: The name of the WMS store.
             workspace: The name of the workspace.
-            store: The name of the WMS store.
             body: The body of the request used to modify the WMS store.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wms_store(self, workspace: str, store: str) -> str:
+    def delete_wms_store(self, name: str, *, workspace: str) -> str:
         """Deletes a single WMS store.
 
         Args:
+            name: The name of the WMS store.
             workspace: The name of the workspace.
-            store: The name of the WMS store.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -3483,8 +3733,8 @@ class GeoServer(Base):
     @overload
     def get_wmts_layers(
         self,
-        workspace: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         list: Optional[Literal["available"]] = None,
         format: Literal["json"] = "json",
@@ -3493,8 +3743,8 @@ class GeoServer(Base):
     @overload
     def get_wmts_layers(
         self,
-        workspace: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         list: Optional[Literal["available"]] = None,
         format: Literal["xml"],
@@ -3502,8 +3752,8 @@ class GeoServer(Base):
 
     def get_wmts_layers(
         self,
-        workspace: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         list: Optional[Literal["available"]] = None,
         format: Literal["json", "xml"] = "json",
@@ -3527,32 +3777,32 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def wmts_layer_exists(self, workspace: str, layer: str, *, store: Optional[str] = None) -> bool:
+    def wmts_layer_exists(self, name: str, *, workspace: str, store: Optional[str] = None) -> bool:
         """Check if a WMTS layer exists.
 
         Args:
+            name: The name of the layer.
             workspace: The name of the workspace.
-            layer: The name of the layer.
             store: Name of the wmts store.
 
         Returns:
             True if the WMTS layer exists, False otherwise.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.xml"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}.xml"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{layer}.xml"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{name}.xml"
 
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
     def create_wmts_layer(
-        self, workspace: str, body: Union[str, Dict[str, Any]], *, store: Optional[str] = None
+        self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
     ) -> str:
         """Creates a new WMTS layer.
 
         Args:
-            workspace: The name of the workspace.
             body: The body of the request used to create the WMTS layer.
+            workspace: The name of the workspace.
             store: Name of the wmts store.
 
         Returns:
@@ -3568,9 +3818,9 @@ class GeoServer(Base):
     @overload
     def get_wmts_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
@@ -3579,9 +3829,9 @@ class GeoServer(Base):
     @overload
     def get_wmts_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
@@ -3589,9 +3839,9 @@ class GeoServer(Base):
 
     def get_wmts_layer(
         self,
-        workspace: str,
-        layer: str,
+        name: str,
         *,
+        workspace: str,
         store: Optional[str] = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
@@ -3599,8 +3849,8 @@ class GeoServer(Base):
         """Retrieves a single WMTS layer.
 
         Args:
+            name: The name of the layer.
             workspace: The name of the workspace.
-            layer: The name of the layer.
             store: Optional. Name of the wmts store.
             quiet_on_not_found: Optional. When set to "true", will not log an exception when the style is not present.
                 The 404 status code will still be returned.
@@ -3609,16 +3859,16 @@ class GeoServer(Base):
         Returns:
             The WMTS layer.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}.{format}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{layer}.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{name}.{format}"
 
         params = dict(quietOnNotFound=quiet_on_not_found)
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
     def update_wmts_layer(
-        self, workspace: str, layer: str, body: Union[str, Dict[str, Any]], *, store: Optional[str] = None
+        self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
     ) -> str:
         """Modifies a single WMTS layer.
 
@@ -3631,21 +3881,21 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{layer}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{name}"
 
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
     def delete_wmts_layer(
-        self, workspace: str, layer: str, *, store: Optional[str] = None, recurse: bool = False
+        self, name: str, *, workspace: str, store: Optional[str] = None, recurse: bool = False
     ) -> str:
         """Deletes a single WMTS layer.
 
         Args:
+            name: The name of the layer.
             workspace: The name of the workspace.
-            layer: The name of the layer.
             store: Name of the wmts store.
             recurse: Recursively deletes all layers referenced by the specified wmtslayer.
                 A request with `recurse=false` will fail if any layers reference the wmtslayer.
@@ -3653,9 +3903,9 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{layer}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}"
         if store is not None:
-            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{layer}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}/layers/{name}"
 
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
@@ -3664,12 +3914,12 @@ class GeoServer(Base):
     # WMTS Stores
 
     @overload
-    def get_wmts_stores(self, workspace: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wmts_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_wmts_stores(self, workspace: str, *, format: Literal["xml"]) -> str: ...
+    def get_wmts_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_wmts_stores(self, workspace: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_wmts_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Retrieves the WMTS stores available on the server.
 
         Args:
@@ -3683,26 +3933,26 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def wmts_store_exists(self, workspace: str, store: str) -> bool:
+    def wmts_store_exists(self, name: str, *, workspace: str) -> bool:
         """Checks if a WMTS store exists on the server.
 
         Args:
+            name: The name of the WMTS store.
             workspace: The name of the workspace.
-            store: The name of the WMTS store.
 
         Returns:
             True if the WMTS store exists, False otherwise.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}.xml"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{name}.xml"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_wmts_store(self, workspace: str, body: Union[str, Dict[str, Any]]) -> str:
+    def create_wmts_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Creates a new WMTS store.
 
         Args:
-            workspace: The name of the workspace.
             body: The body of the request used to create the WMTS store.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
@@ -3712,54 +3962,54 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_wmts_store(self, workspace: str, store: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wmts_store(self, name: str, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_wmts_store(self, workspace: str, store: str, *, format: Literal["xml"]) -> str: ...
+    def get_wmts_store(self, name: str, *, workspace: str, format: Literal["xml"]) -> str: ...
 
     def get_wmts_store(
-        self, workspace: str, store: str, *, format: Literal["json", "xml"] = "json"
+        self, name: str, *, workspace: str, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Retrieves a single WMTS store.
 
         Args:
+            name: The name of the WMTS store.
             workspace: The name of the workspace.
-            store: The name of the WMTS store.
             format: Optional. The format of the response. Can be either "json" or "xml".
 
         Returns:
             The WMTS store.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wmts_store(self, workspace: str, store: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_wmts_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Modifies a single WMTS store.
 
         Args:
-            workspace: The name of the workspace.
-            store: The name of the WMTS store.
+            name: The name of the WMTS store.
             body: The body of the request used to modify the WMTS store.
+            workspace: The name of the workspace.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wmts_store(self, workspace: str, store: str) -> str:
+    def delete_wmts_store(self, name: str, *, workspace: str) -> str:
         """Deletes a single WMTS store.
 
         Args:
+            name: The name of the WMTS store.
             workspace: The name of the workspace.
-            store: The name of the WMTS store.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{store}"
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmtsstores/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -3784,16 +4034,16 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def workspace_exists(self, workspace: str) -> bool:
+    def workspace_exists(self, name: str) -> bool:
         """Checks if a workspace exists on the server.
 
         Args:
-            workspace: The name of the workspace.
+            name: The name of the workspace.
 
         Returns:
             True if the workspace exists, False otherwise.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}.xml"
+        url = f"{self.service_url}/rest/workspaces/{name}.xml"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
@@ -3823,26 +4073,26 @@ class GeoServer(Base):
         return self.create_workspace(body=body)
 
     @overload
-    def get_workspace(self, workspace: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_workspace(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_workspace(self, workspace: str, *, format: Literal["xml"]) -> str: ...
+    def get_workspace(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_workspace(self, workspace: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_workspace(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Displays a single workspace on the server.
 
         Args:
-            workspace: The name of the workspace.
+            name: The name of the workspace.
             format: Optional. The format of the response. Can be either "json" or "xml".
 
         Returns:
             The workspace.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}.{format}"
+        url = f"{self.service_url}/rest/workspaces/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_workspace(self, workspace: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_workspace(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies a single workspace.
 
         Args:
@@ -3852,20 +4102,21 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}"
+        url = f"{self.service_url}/rest/workspaces/{name}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_workspace(self, workspace: str, recurse: bool = False) -> str:
+    def delete_workspace(self, name: str, *, recurse: bool = False) -> str:
         """Deletes a single workspace.
 
         Args:
             workspace: The name of the workspace.
+            recurse: Optional. Recursively deletes all resources in the workspace. Defaults to False.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/workspaces/{workspace}"
+        url = f"{self.service_url}/rest/workspaces/{name}"
         params = dict(recurse=recurse)
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
@@ -3927,12 +4178,6 @@ class GeoServer(Base):
             }
             geoserver.create_user(body=body)
             ```
-
-            The output will be similar to the following:
-
-            ```console
-            "Created"
-            ```
         """
         url = f"{self.service_url}/rest/security/usergroup/users"
         if service is not None:
@@ -3941,11 +4186,11 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    def update_user(self, user: str, body: Union[str, Dict[str, Any]], *, service: Optional[str] = None) -> str:
+    def update_user(self, name: str, body: Union[str, Dict[str, Any]], *, service: Optional[str] = None) -> str:
         """Update an existing user in the default user/group service.
 
         Args:
-            user: The name of the user.
+            name: The name of the user.
             body: The body of the request used to modify the user.
             service: The name of the user/group service.
 
@@ -3956,72 +4201,70 @@ class GeoServer(Base):
             To update an existing user in the default user/group service, you can use the following code:
 
             ```python
-            body = {
-                "userName": "user",
-                "password": "password",
-                "enabled": "true",
-            }
-            geoserver.update_user(username="user", body=body)
-            ```
+            body = \"\"\"
+            <user>
+                <userName>user</userName>
+                <password>password</password>
+                <enabled>true</enabled>
+            </user>
+            \"\"\"
 
-            The output will be similar to the following:
-
-            ```console
-            "OK"
+            geoserver.update_user("my_user", body=body)
             ```
         """
-        url = f"{self.service_url}/rest/security/usergroup/user/{user}"
+        url = f"{self.service_url}/rest/security/usergroup/user/{name}"
         if service is not None:
-            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{user}"
+            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{name}"
 
         self._request(method="post", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_user(self, user: str, *, service: Optional[str] = None) -> str:
+    def delete_user(self, name: str, *, service: Optional[str] = None) -> str:
         """Remove an existing user from the default user/group service.
 
         Args:
-            user: The name of the user.
+            name: The name of the user.
+            service: The name of the user/group service.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/security/usergroup/user/{user}"
+        url = f"{self.service_url}/rest/security/usergroup/user/{name}"
         if service is not None:
-            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{user}"
+            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{name}"
 
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
     @overload
     def get_user_groups(
-        self, user: str, *, service: Optional[str] = None, format: Literal["json"] = "json"
+        self, name: str, *, service: Optional[str] = None, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
-    def get_user_groups(self, user: str, *, service: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_user_groups(self, name: str, *, service: Optional[str] = None, format: Literal["xml"]) -> str: ...
 
     def get_user_groups(
-        self, user: str, *, service: Optional[str] = None, format: Literal["json", "xml"] = "json"
+        self, name: str, *, service: Optional[str] = None, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Query all groups in the default user/group service.
 
         Args:
-            user: The name of the user.
+            name: The name of the user.
             service: Optional. The name of the user/group service.
             format: Optional. The format of the response. Can be either "json" or "xml".
 
         Returns:
             The groups.
         """
-        url = f"{self.service_url}/rest/security/usergroup/user/{user}/groups.{format}"
+        url = f"{self.service_url}/rest/security/usergroup/user/{name}/groups.{format}"
         if service is not None:
-            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{user}/groups.{format}"
+            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{name}/groups.{format}"
 
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_user_to_group(self, user: str, group: str, *, service: Optional[str] = None) -> str:
+    def add_user_to_group(self, user: str, group: str, *, service: Optional[str] = None) -> str:
         """Associate a user with a group in the default user/group service.
 
         Args:
@@ -4039,7 +4282,7 @@ class GeoServer(Base):
         self._request(method="post", url=url)
         return OK_MESSAGE
 
-    def delete_user_from_group(self, user: str, group: str, *, service: Optional[str] = None) -> str:
+    def remove_user_from_group(self, user: str, group: str, *, service: Optional[str] = None) -> str:
         """Remove a user from a group in the default user/group service.
 
         Args:
@@ -4083,6 +4326,13 @@ class GeoServer(Base):
 
         Returns:
             Success message.
+
+        Example:
+            To remove a group from the default user/group service, you can use the following code:
+
+            ```python
+            geoserver.delete_group(group="group")
+            ```
         """
         url = f"{self.service_url}/rest/security/usergroup/group/{group}"
         if service is not None:
@@ -4131,6 +4381,13 @@ class GeoServer(Base):
 
         Returns:
             The roles.
+
+        Example:
+            To get all roles in the default user/group service, you can use the following code:
+
+            ```python
+            geoserver.get_roles()
+            ```
         """
         if service is None and group is None and user is None:
             url = f"{self.service_url}/rest/security/roles.{format}"
@@ -4219,6 +4476,13 @@ class GeoServer(Base):
 
         Returns:
             Success message.
+
+        Example:
+            To disassociate a user from a role in the default user/group service, you can use the following code:
+
+            ```python
+            geoserver.disassociate_role(role="ROLE_ADMIN", user="admin")
+            ```
         """
         if service is not None and group is None and user is None:
             url = f"{self.service_url}/rest/security/roles/service/{service}/role/{role}"
