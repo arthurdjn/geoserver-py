@@ -1142,7 +1142,7 @@ class GeoServer(Base):
         Args:
             body: The body of the request used to create the feature type.
             workspace: The name of the workspace.
-            store: The name of the data store.
+            store: Optional. The name of the data store.
 
         Returns:
             Success message.

@@ -19,6 +19,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### New Contributors
 
+## 0.1.0 (2024-06-12)
+
+### What's Changed
+
+#### Fixed
+
+- Updated version to 0.0.1 to 0.1.0 for PyPI release.
+
+#### Added
+
+#### Changed
+
+- Renamed and restructured some endpoints / methods to share a similar structure.
+(e.g. `get_workspace(workspace: str)` -> `get_workspace(name: str)`, `get_layer(layer: str)` -> `get_layer(name: str)`)
+- Updated documentation and examples to reflect the changes.
+
+#### Removed
+
+### New Contributors
+
 ## 0.0.1 (2024-06-06)
 
 ### What's Changed
