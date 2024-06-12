@@ -44,7 +44,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_blob_store(self, name: str, body: Dict[str, Any]) -> str:
+    def insert_blob_store(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Creates a new blob store.
 
         Args:
@@ -120,7 +120,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_diskquota(self, body: Dict[str, Any]) -> str:
+    def update_diskquota(self, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies the disk quota settings.
 
         Args:
@@ -133,19 +133,28 @@ class GeoWebCache(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def filter_update(self, filter: str, update: str) -> Dict[str, Any]:
+    @overload
+    def filter_update(self, filter: str, update: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+
+    @overload
+    def filter_update(self, filter: str, update: str, *, format: Literal["xml"]) -> str: ...
+
+    def filter_update(
+        self, filter: str, update: str, *, format: Literal["json", "xml"] = "json"
+    ) -> Union[str, Dict[str, Any]]:
         """Restfully updates the given filter with parameters provided in the xml or zip.
 
         Args:
             filter: The filter to use for the update.
             update: The update to apply.
+            format: Optional. The format of the response.
 
         Returns:
             The response.
         """
-        url = f"{self.service_url}/gwc/rest/filter/{filter}/update/{update}"
+        url = f"{self.service_url}/gwc/rest/filter/{filter}/update/{update}.{format}"
         response = self._request(method="post", url=url)
-        return response.json()
+        return response.json() if format == "json" else response.text
 
     @overload
     def get_global_settings(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
@@ -166,7 +175,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_global_settings(self, body: Dict[str, Any]) -> str:
+    def update_global_settings(self, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies the global settings.
 
         Args:
@@ -220,7 +229,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_gridset(self, name: str, body: Dict[str, Any]) -> str:
+    def insert_gridset(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Creates a new configured gridset on the server, or modifies an existing gridset.
 
         Args:
@@ -288,7 +297,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_layer(self, name: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    def insert_layer(self, name: str, body: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Creates a new layer on the server, or modifies an existing layer.
 
         Args:
