@@ -17,9 +17,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The blob stores.
         """
@@ -40,9 +37,6 @@ class GeoWebCache(Base):
             name: The name of the blob store.
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The blob store.
         """
@@ -50,36 +44,30 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_blob_store(self, store: str, body: Dict[str, Any]) -> str:
+    def insert_blob_store(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Creates a new blob store.
 
         Args:
-            store: The name of the blob store.
+            name: The name of the blob store.
             body: The body of the request used to create the blob store.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/gwc/rest/blobstores/{store}.json"
+        url = f"{self.service_url}/gwc/rest/blobstores/{name}.json"
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    def delete_blob_store(self, store: str) -> str:
+    def delete_blob_store(self, name: str) -> str:
         """Deletes a single blob store.
 
         Args:
-            store: The name of the blob store.
-
-        Raises:
-            GeoServerError: If the request fails.
+            name: The name of the blob store.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/gwc/rest/blobstores/{store}"
+        url = f"{self.service_url}/gwc/rest/blobstores/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -104,9 +92,6 @@ class GeoWebCache(Base):
             type: Accepts java as an extension.
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The bounds.
         """
@@ -128,9 +113,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The disk quota settings.
         """
@@ -138,14 +120,11 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_diskquota(self, body: Dict[str, Any]) -> str:
+    def update_diskquota(self, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies the disk quota settings.
 
         Args:
             body: The body of the request used to modify the disk quota settings.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             Success message.
@@ -154,22 +133,28 @@ class GeoWebCache(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def filter_update(self, filter: str, update: str) -> Dict[str, Any]:
+    @overload
+    def filter_update(self, filter: str, update: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+
+    @overload
+    def filter_update(self, filter: str, update: str, *, format: Literal["xml"]) -> str: ...
+
+    def filter_update(
+        self, filter: str, update: str, *, format: Literal["json", "xml"] = "json"
+    ) -> Union[str, Dict[str, Any]]:
         """Restfully updates the given filter with parameters provided in the xml or zip.
 
         Args:
             filter: The filter to use for the update.
             update: The update to apply.
-
-        Raises:
-            GeoServerError: If the request fails.
+            format: Optional. The format of the response.
 
         Returns:
             The response.
         """
-        url = f"{self.service_url}/gwc/rest/filter/{filter}/update/{update}"
+        url = f"{self.service_url}/gwc/rest/filter/{filter}/update/{update}.{format}"
         response = self._request(method="post", url=url)
-        return response.json()
+        return response.json() if format == "json" else response.text
 
     @overload
     def get_global_settings(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
@@ -183,9 +168,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The global settings.
         """
@@ -193,14 +175,11 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_global_settings(self, body: Dict[str, Any]) -> str:
+    def update_global_settings(self, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies the global settings.
 
         Args:
             body: The body of the request used to modify the global settings.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             Success message.
@@ -223,9 +202,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The gridsets.
         """
@@ -234,58 +210,49 @@ class GeoWebCache(Base):
         return response.json() if format == "json" else response.text
 
     @overload
-    def get_gridset(self, gridset: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_gridset(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_gridset(self, gridset: str, *, format: Literal["xml"]) -> str: ...
+    def get_gridset(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_gridset(self, gridset: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_gridset(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Retrieves a single gridset.
 
         Args:
-            gridset: The name of the gridset.
+            name: The name of the gridset.
             format: Optional. The format of the response.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             The gridset.
         """
-        url = f"{self.service_url}/gwc/rest/gridsets/{gridset}.{format}"
+        url = f"{self.service_url}/gwc/rest/gridsets/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_gridset(self, gridset: str, body: Dict[str, Any]) -> str:
+    def insert_gridset(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Creates a new configured gridset on the server, or modifies an existing gridset.
 
         Args:
-            gridset: The name of the gridset.
+            name: The name of the gridset.
             body: The body of the request used to modify the gridset.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/gwc/rest/gridsets/{gridset}"
+        url = f"{self.service_url}/gwc/rest/gridsets/{name}"
         response = self._request(method="put", url=url, body=body)
         return response.text
 
-    def delete_gridset(self, gridset: str) -> str:
+    def delete_gridset(self, name: str) -> str:
         """Deletes a single gridset.
 
         Args:
             gridset: The name of the gridset.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/gwc/rest/gridsets/{gridset}"
+        url = f"{self.service_url}/gwc/rest/gridsets/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -303,9 +270,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The layers.
         """
@@ -314,58 +278,49 @@ class GeoWebCache(Base):
         return response.json() if format == "json" else response.text
 
     @overload
-    def get_layer(self, layer: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_layer(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
 
     @overload
-    def get_layer(self, layer: str, *, format: Literal["xml"]) -> str: ...
+    def get_layer(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_layer(self, layer: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_layer(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Retrieves a single layer.
 
         Args:
-            layer: The name of the layer.
+            name: The name of the layer.
             format: Optional. The format of the response.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             The layer.
         """
-        url = f"{self.service_url}/gwc/rest/layers/{layer}.{format}"
+        url = f"{self.service_url}/gwc/rest/layers/{name}.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_layer(self, layer: str, body: Dict[str, Any]) -> Dict[str, Any]:
+    def insert_layer(self, name: str, body: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Creates a new layer on the server, or modifies an existing layer.
 
         Args:
-            layer: The name of the layer.
+            name: The name of the layer.
             body: The body of the request used to modify the layer.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/gwc/rest/layers/{layer}"
+        url = f"{self.service_url}/gwc/rest/layers/{name}"
         response = self._request(method="put", url=url, body=body)
         return response.json()
 
-    def delete_layer(self, layer: str) -> str:
+    def delete_layer(self, name: str) -> str:
         """Deletes a single layer.
 
         Args:
-            layer: The name of the layer.
-
-        Raises:
-            GeoServerError: If the request fails.
+            name: The name of the layer.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/gwc/rest/layers/{layer}"
+        url = f"{self.service_url}/gwc/rest/layers/{name}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -383,9 +338,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The mass truncate settings.
         """
@@ -402,9 +354,6 @@ class GeoWebCache(Base):
         Args:
             request_type: The type of request.
             layer: The name of the layer.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             Success message.
@@ -428,9 +377,6 @@ class GeoWebCache(Base):
         Args:
             format: Optional. The format of the response.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             The statistics.
         """
@@ -446,15 +392,12 @@ class GeoWebCache(Base):
         Args:
             body: The string value of the configuration ie. `reload_configuration=1`.
 
-        Raises:
-            GeoServerError: If the request fails.
-
         Returns:
             Success message.
         """
         url = f"{self.service_url}/gwc/rest/reload"
         headers = {"Content-Type": "text/plain"}
-        response = self._request(method="post", url=url, headers=headers)
+        response = self._request(method="post", url=url, data=body, headers=headers)
         return response.text
 
     # Seed
@@ -473,9 +416,6 @@ class GeoWebCache(Base):
 
         Args:
             format: Optional. The format of the response.
-
-        Raises:
-            GeoServerError: If the request fails.
 
         Returns:
             The seed settings.

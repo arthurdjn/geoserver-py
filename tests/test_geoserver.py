@@ -29,23 +29,23 @@ def test_workspace(test_geoserver: GeoServer) -> Generator[str, None, None]:
     workspace = "test-workspace"
     test_geoserver.create_workspace(body={"workspace": {"name": workspace}})
     yield workspace
-    test_geoserver.delete_workspace(workspace=workspace, recurse=True)
+    test_geoserver.delete_workspace(workspace, recurse=True)
 
 
 @pytest.fixture(scope="module")
 def test_data_store(test_geoserver: GeoServer, test_workspace: str) -> Generator[str, None, None]:
     file_path = Path(TEST_DATA_DIR, "vectors", "buildings.shp").resolve()
     data_store = "test-datastore"
-    test_geoserver.upload_data_store(workspace=test_workspace, store=data_store, file=file_path, format="shp")
+    test_geoserver.upload_data_store(file_path, workspace=test_workspace, name=data_store, format="shp")
     yield data_store
-    test_geoserver.delete_data_store(workspace=test_workspace, store=data_store, recurse=True)
+    test_geoserver.delete_data_store(data_store, workspace=test_workspace, recurse=True)
 
 
 @pytest.fixture(scope="module")
 def test_feature_type(
     test_geoserver: GeoServer, test_workspace: str, test_data_store: str
 ) -> Generator[str, None, None]:
-    data = test_geoserver.get_feature_type(workspace=test_workspace, feature_type=test_data_store)
+    data = test_geoserver.get_feature_type(test_data_store, workspace=test_workspace)
     yield data["featureType"]["name"]
 
 
@@ -56,31 +56,29 @@ def test_coverage_store(test_geoserver: GeoServer, test_workspace: str) -> Gener
     assert file_path.exists()
 
     test_geoserver.upload_coverage_store(
-        workspace=test_workspace,
-        store=coveragestore,
         file=file_path,
+        name=coveragestore,
+        workspace=test_workspace,
         format="geotiff",
     )
     yield coveragestore
-    test_geoserver.delete_coverage_store(workspace=test_workspace, store=coveragestore, recurse=True)
+    test_geoserver.delete_coverage_store(coveragestore, workspace=test_workspace, recurse=True)
 
 
 @pytest.fixture(scope="module")
 def test_coverage(
     test_geoserver: GeoServer, test_workspace: str, test_coverage_store: str
 ) -> Generator[str, None, None]:
-    data = test_geoserver.get_coverage(
-        workspace=test_workspace, coverage=test_coverage_store, store=test_coverage_store
-    )
+    data = test_geoserver.get_coverage(test_coverage_store, workspace=test_workspace, store=test_coverage_store)
     yield data["coverage"]["name"]
 
 
 @pytest.fixture(scope="module")
 def test_group(test_geoserver: GeoServer) -> Generator[str, None, None]:
     name = "test-group"
-    test_geoserver.create_group(group=name)
+    test_geoserver.create_user_group(name)
     yield name
-    test_geoserver.delete_group(group=name)
+    test_geoserver.delete_user_group(name)
 
 
 @pytest.fixture(scope="module")
@@ -95,15 +93,15 @@ def test_user(test_geoserver: GeoServer) -> Generator[str, None, None]:
     }
     test_geoserver.create_user(body=body)
     yield username
-    test_geoserver.delete_user(user=username)
+    test_geoserver.delete_user(username)
 
 
 @pytest.fixture(scope="module")
 def test_role(test_geoserver: GeoServer) -> Generator[str, None, None]:
     name = "test-role"
-    test_geoserver.create_role(role=name)
+    test_geoserver.create_role(name)
     yield name
-    test_geoserver.delete_role(role=name)
+    test_geoserver.delete_role(name)
 
 
 # About
@@ -142,7 +140,7 @@ def test_get_data_stores(test_geoserver: GeoServer, test_workspace: str) -> None
     assert isinstance(data, dict)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.get_workspace(workspace="not-found")
+        test_geoserver.get_workspace("not-found")
     assert e_info.value.status_code == 404
 
 
@@ -186,7 +184,7 @@ def test_get_data_store(test_geoserver: GeoServer, test_workspace: str, store: s
     if store == TEST_DATA_STORE:
         store = request.getfixturevalue(store)
 
-    data = test_geoserver.get_data_store(workspace=test_workspace, store=store)
+    data = test_geoserver.get_data_store(store, workspace=test_workspace)
     assert isinstance(data, dict)
 
 
@@ -194,7 +192,7 @@ def test_get_data_store(test_geoserver: GeoServer, test_workspace: str, store: s
 @pytest.mark.parametrize("store", [None, "not-found"])
 def test_get_data_store_invalid(test_geoserver: GeoServer, test_workspace: str, store: str) -> None:
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.get_data_store(store=store, workspace=test_workspace)
+        test_geoserver.get_data_store(store, workspace=test_workspace)
     assert e_info.value.status_code == 404
 
 
@@ -217,34 +215,34 @@ def test_delete_data_store(test_geoserver: GeoServer, test_workspace: str) -> No
     msg = test_geoserver.create_data_store(workspace=test_workspace, body=body)
     assert isinstance(msg, str)
 
-    msg = test_geoserver.delete_data_store(workspace=test_workspace, store=data_store)
+    msg = test_geoserver.delete_data_store(data_store, workspace=test_workspace)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_data_store(workspace=test_workspace, store=data_store)
+        test_geoserver.delete_data_store(data_store, workspace=test_workspace)
     assert e_info.value.status_code == 404
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_data_store(workspace="not-found", store=data_store)
+        test_geoserver.delete_data_store(data_store, workspace="not-found")
     assert e_info.value.status_code == 404
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_update_data_store(test_geoserver: GeoServer, test_workspace: str, test_data_store: str) -> None:
-    body = test_geoserver.get_data_store(workspace=test_workspace, store=test_data_store)
+    body = test_geoserver.get_data_store(test_data_store, workspace=test_workspace)
     datestr = "2024-01-01 00:00:00.0 UTC"
     body["dataStore"]["dateCreated"] = datestr
 
-    data = test_geoserver.update_data_store(workspace=test_workspace, store=test_data_store, body=body)
+    data = test_geoserver.update_data_store(test_data_store, workspace=test_workspace, body=body)
     assert isinstance(data, str)
 
-    body = test_geoserver.get_data_store(workspace=test_workspace, store=test_data_store)
+    body = test_geoserver.get_data_store(test_data_store, workspace=test_workspace)
     assert body["dataStore"]["dateCreated"] == datestr
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_reset_data_store_caches(test_geoserver: GeoServer, test_workspace: str, test_data_store: str) -> None:
-    msg = test_geoserver.reset_data_store_caches(workspace=test_workspace, store=test_data_store)
+    msg = test_geoserver.reset_data_store_caches(test_data_store, workspace=test_workspace)
     assert isinstance(msg, str)
 
 
@@ -281,7 +279,7 @@ def test_create_coverage(
     print(f"store: {store}")
     print(test_geoserver.get_coverages(workspace=test_workspace))
 
-    body = test_geoserver.get_coverage(workspace=test_workspace, coverage=coverage, store=store)
+    body = test_geoserver.get_coverage(coverage, workspace=test_workspace, store=store)
     new_coverage = "tmp-coverage"
     body["coverage"]["name"] = new_coverage
     body["coverage"]["nativeName"] = new_coverage
@@ -308,11 +306,11 @@ def test_get_coverage(
     if store == TEST_COVERAGE_STORE:
         store = request.getfixturevalue(store)
 
-    data = test_geoserver.get_coverage(workspace=test_workspace, coverage=test_coverage_store, store=store)
+    data = test_geoserver.get_coverage(test_coverage_store, workspace=test_workspace, store=store)
     assert isinstance(data, dict)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.get_coverage(workspace=test_workspace, coverage="not-found")
+        test_geoserver.get_coverage("not-found", workspace=test_workspace)
     assert e_info.value.status_code == 404
 
 
@@ -320,19 +318,19 @@ def test_get_coverage(
 def test_update_coverage(
     test_geoserver: GeoServer, test_workspace: str, test_coverage: str, test_coverage_store: str
 ) -> None:
-    body = test_geoserver.get_coverage(workspace=test_workspace, coverage=test_coverage, store=test_coverage_store)
+    body = test_geoserver.get_coverage(test_coverage, workspace=test_workspace, store=test_coverage_store)
     description = "Coverage updated"
     body["coverage"]["description"] = description
 
     data = test_geoserver.update_coverage(
+        test_coverage,
         workspace=test_workspace,
-        coverage=test_coverage,
         store=test_coverage_store,
         body=body,
     )
     assert isinstance(data, str)
 
-    body = test_geoserver.get_coverage(workspace=test_workspace, coverage=test_coverage, store=test_coverage_store)
+    body = test_geoserver.get_coverage(test_coverage, workspace=test_workspace, store=test_coverage_store)
     assert body["coverage"]["description"] == description
 
 
@@ -341,19 +339,17 @@ def test_delete_coverage(test_geoserver: GeoServer, test_workspace: str) -> None
     coveragestore = "tmp-coveragestore"
     file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
     test_geoserver.upload_coverage_store(
-        workspace=test_workspace,
-        store=coveragestore,
         file=file_path,
+        name=coveragestore,
+        workspace=test_workspace,
         format="geotiff",
     )
 
-    msg = test_geoserver.delete_coverage(
-        workspace=test_workspace, coverage=coveragestore, store=coveragestore, recurse=True
-    )
+    msg = test_geoserver.delete_coverage(coveragestore, workspace=test_workspace, store=coveragestore, recurse=True)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_coverage(workspace=test_workspace, coverage=coveragestore, store=coveragestore)
+        test_geoserver.delete_coverage(coveragestore, workspace=test_workspace, store=coveragestore)
     assert e_info.value.status_code == 404
 
 
@@ -361,9 +357,7 @@ def test_delete_coverage(test_geoserver: GeoServer, test_workspace: str) -> None
 def test_reset_coverage_caches(
     test_geoserver: GeoServer, test_workspace: str, test_coverage_store: str, test_coverage: str
 ) -> None:
-    msg = test_geoserver.reset_coverage_caches(
-        workspace=test_workspace, coverage=test_coverage, store=test_coverage_store
-    )
+    msg = test_geoserver.reset_coverage_caches(test_coverage, workspace=test_workspace, store=test_coverage_store)
     assert isinstance(msg, str)
 
 
@@ -397,9 +391,9 @@ def test_create_coverage_store(test_geoserver: GeoServer, test_workspace: str) -
 def test_upload_coverage_store(test_geoserver: GeoServer, test_workspace: str) -> None:
     file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
     data = test_geoserver.upload_coverage_store(
-        workspace=test_workspace,
         file=file_path,
-        store=f"{file_path.stem}-store2",
+        workspace=test_workspace,
+        name=f"{file_path.stem}-store2",
         format="geotiff",
     )
     assert isinstance(data, str)
@@ -408,24 +402,24 @@ def test_upload_coverage_store(test_geoserver: GeoServer, test_workspace: str) -
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_get_coverage_store(test_geoserver: GeoServer, test_workspace: str, test_coverage_store: str) -> None:
 
-    data = test_geoserver.get_coverage_store(workspace=test_workspace, store=test_coverage_store)
+    data = test_geoserver.get_coverage_store(test_coverage_store, workspace=test_workspace)
     assert isinstance(data, dict)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.get_coverage_store(workspace=test_workspace, store="not-found")
+        test_geoserver.get_coverage_store("not-found", workspace=test_workspace)
     assert e_info.value.status_code == 404
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_update_coverage_store(test_geoserver: GeoServer, test_workspace: str, test_coverage_store: str) -> None:
-    body = test_geoserver.get_coverage_store(workspace=test_workspace, store=test_coverage_store)
+    body = test_geoserver.get_coverage_store(test_coverage_store, workspace=test_workspace)
     datestr = "2024-01-01 00:00:00.0 UTC"
     body["coverageStore"]["dateModified"] = datestr
 
-    data = test_geoserver.update_coverage_store(workspace=test_workspace, store=test_coverage_store, body=body)
+    data = test_geoserver.update_coverage_store(test_coverage_store, workspace=test_workspace, body=body)
     assert isinstance(data, str)
 
-    body = test_geoserver.get_coverage_store(workspace=test_workspace, store=test_coverage_store)
+    body = test_geoserver.get_coverage_store(test_coverage_store, workspace=test_workspace)
     assert body["coverageStore"]["dateModified"] == datestr
 
 
@@ -434,23 +428,23 @@ def test_delete_coverage_store(test_geoserver: GeoServer, test_workspace: str) -
     file_path = Path(TEST_DATA_DIR, "rasters", "raster.tif").resolve()
 
     _ = test_geoserver.upload_coverage_store(
-        workspace=test_workspace,
         file=file_path,
-        store=f"{file_path.stem}-store3",
+        workspace=test_workspace,
+        name=f"{file_path.stem}-store3",
         format="geotiff",
     )
 
-    msg = test_geoserver.delete_coverage_store(workspace=test_workspace, store=f"{file_path.stem}-store3", recurse=True)
+    msg = test_geoserver.delete_coverage_store(f"{file_path.stem}-store3", workspace=test_workspace, recurse=True)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_coverage_store(workspace=test_workspace, store=f"{file_path.stem}-store3", recurse=True)
+        test_geoserver.delete_coverage_store(f"{file_path.stem}-store3", workspace=test_workspace, recurse=True)
     assert e_info.value.status_code == 404
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_reset_coverage_store_caches(test_geoserver: GeoServer, test_workspace: str, test_coverage_store: str) -> None:
-    msg = test_geoserver.reset_coverage_store_caches(workspace=test_workspace, store=test_coverage_store)
+    msg = test_geoserver.reset_coverage_store_caches(test_coverage_store, workspace=test_workspace)
     assert isinstance(msg, str)
 
 
@@ -483,7 +477,7 @@ def test_get_feature_type(
     if store == TEST_DATA_STORE:
         store = request.getfixturevalue(store)
 
-    data = test_geoserver.get_feature_type(workspace=test_workspace, feature_type=test_feature_type, store=store)
+    data = test_geoserver.get_feature_type(test_feature_type, workspace=test_workspace, store=store)
     assert isinstance(data, dict)
 
 
@@ -496,24 +490,20 @@ def test_update_feature_type(
     test_data_store: str,
     recalculate: Optional[str],
 ) -> None:
-    data = test_geoserver.get_feature_type(
-        workspace=test_workspace, feature_type=test_feature_type, store=test_data_store
-    )
+    data = test_geoserver.get_feature_type(test_feature_type, workspace=test_workspace, store=test_data_store)
     assert isinstance(data, dict)
 
     data["featureType"]["title"] = "Updated title"
     msg = test_geoserver.update_feature_type(
+        test_feature_type,
         workspace=test_workspace,
-        feature_type=test_feature_type,
         body=data,
         store=test_data_store,
-        recalculate=recalculate,  # type: ignore
+        recalculate=recalculate,  # type: ignore[arg-type]
     )
     assert isinstance(msg, str)
 
-    data = test_geoserver.get_feature_type(
-        workspace=test_workspace, feature_type=test_feature_type, store=test_data_store
-    )
+    data = test_geoserver.get_feature_type(test_feature_type, workspace=test_workspace, store=test_data_store)
     assert data["featureType"]["title"] == "Updated title"
 
 
@@ -524,11 +514,7 @@ def test_reset_feature_type_caches(
     test_feature_type: str,
     test_data_store: str,
 ) -> None:
-    msg = test_geoserver.reset_feature_type_caches(
-        workspace=test_workspace,
-        feature_type=test_feature_type,
-        store=test_data_store,
-    )
+    msg = test_geoserver.reset_feature_type_caches(test_feature_type, workspace=test_workspace, store=test_data_store)
     assert isinstance(msg, str)
 
 
@@ -540,8 +526,8 @@ def test_delete_feature_type(
     test_data_store: str,
 ) -> None:
     msg = test_geoserver.delete_feature_type(
+        test_feature_type,
         workspace=test_workspace,
-        feature_type=test_feature_type,
         store=test_data_store,
         recurse=True,
     )
@@ -578,7 +564,7 @@ def test_get_layer(test_geoserver: GeoServer, workspace: str, test_coverage: str
     if workspace == TEST_WORKSPACE:
         workspace = request.getfixturevalue(workspace)
 
-    data = test_geoserver.get_layer(layer=test_coverage, workspace=workspace)
+    data = test_geoserver.get_layer(test_coverage, workspace=workspace)
     assert isinstance(data, dict)
 
 
@@ -597,26 +583,26 @@ def test_get_layer_invalid(test_geoserver: GeoServer, workspace: str, layer: str
         layer = request.getfixturevalue(layer)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.get_layer(layer=layer, workspace=workspace)
+        test_geoserver.get_layer(layer, workspace=workspace)
     assert e_info.value.status_code == 404
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_update_layer(test_geoserver: GeoServer, test_workspace: str, test_coverage: str) -> None:
-    body = test_geoserver.get_layer(layer=test_coverage)
+    body = test_geoserver.get_layer(test_coverage)
     datestr = "2024-01-01 00:00:00.0 UTC"
     body["layer"]["dateCreated"] = datestr
 
-    data = test_geoserver.update_layer(layer=test_coverage, workspace=test_workspace, body=body)
+    data = test_geoserver.update_layer(test_coverage, workspace=test_workspace, body=body)
     assert isinstance(data, str)
 
-    body = test_geoserver.get_layer(layer=test_coverage)
+    body = test_geoserver.get_layer(test_coverage)
     assert body["layer"]["dateCreated"] == datestr
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_delete_layer(test_geoserver: GeoServer, test_coverage: str) -> None:
-    msg = test_geoserver.delete_layer(layer=test_coverage)
+    msg = test_geoserver.delete_layer(test_coverage)
     assert isinstance(msg, str)
 
 
@@ -690,7 +676,7 @@ def test_get_monitored_request(test_geoserver: GeoServer) -> None:
     assert isinstance(request_list, list) and len(request_list) > 0
 
     request_id = request_list[0]["name"]
-    data = test_geoserver.get_monitored_request(request_id=request_id)
+    data = test_geoserver.get_monitored_request(request_id)
     assert isinstance(data, dict)
 
 
@@ -716,7 +702,7 @@ def test_create_namespace(test_geoserver: GeoServer) -> None: ...
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_get_namespace(test_geoserver: GeoServer, test_workspace: str) -> None:
-    data = test_geoserver.get_namespace(namespace=test_workspace)
+    data = test_geoserver.get_namespace(test_workspace)
     assert isinstance(data, dict)
 
 
@@ -1090,7 +1076,7 @@ def test_create_style(test_geoserver: GeoServer, test_workspace: str) -> None:
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("style", ["generic", "line", "point", "polygon", "raster"])
 def test_get_style(test_geoserver: GeoServer, style: str) -> None:
-    data = test_geoserver.get_style(style=style)
+    data = test_geoserver.get_style(style)
     assert isinstance(data, dict)
 
 
@@ -1311,40 +1297,40 @@ def test_create_workspace(test_geoserver: GeoServer) -> None:
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_get_workspace(test_geoserver: GeoServer, test_workspace: str) -> None:
-    data = test_geoserver.get_workspace(workspace=test_workspace)
+    data = test_geoserver.get_workspace(test_workspace)
     assert isinstance(data, dict)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.get_workspace(workspace="not-found")
+        test_geoserver.get_workspace("not-found")
     assert e_info.value.status_code == 404
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("workspace", ["tmp-workspace"])
 def test_delete_workspace(test_geoserver: GeoServer, workspace: str) -> None:
-    msg = test_geoserver.delete_workspace(workspace=workspace)
+    msg = test_geoserver.delete_workspace(workspace)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_workspace(workspace=workspace)
+        test_geoserver.delete_workspace(workspace)
     assert e_info.value.status_code == 404
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_update_workspace(test_geoserver: GeoServer, test_workspace: str) -> None:
-    body = test_geoserver.get_workspace(workspace=test_workspace)
+    body = test_geoserver.get_workspace(test_workspace)
     name = "new-workspace"
     body["workspace"]["name"] = name
 
-    msg = test_geoserver.update_workspace(workspace=test_workspace, body=body)
+    msg = test_geoserver.update_workspace(test_workspace, body=body)
     assert isinstance(msg, str)
 
-    body = test_geoserver.get_workspace(workspace=name)
+    body = test_geoserver.get_workspace(name)
     assert body["workspace"]["name"] == name
 
     # Revert
     body["workspace"]["name"] = test_workspace
-    msg = test_geoserver.update_workspace(workspace=name, body=body)
+    msg = test_geoserver.update_workspace(name, body=body)
 
 
 # User Groups
@@ -1404,7 +1390,7 @@ def test_update_user(test_geoserver: GeoServer, username: str, service: Optional
     assert user is not None
 
     user["enabled"] = False
-    msg = test_geoserver.update_user(user=username, body={"user": user}, service=service)
+    msg = test_geoserver.update_user(username, body={"user": user}, service=service)
     assert isinstance(msg, str)
 
     data = test_geoserver.get_users()
@@ -1415,11 +1401,11 @@ def test_update_user(test_geoserver: GeoServer, username: str, service: Optional
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("username,service", [("test", None), ("test2", "default")])
 def test_delete_user(test_geoserver: GeoServer, username: str, service: Optional[str]) -> None:
-    msg = test_geoserver.delete_user(user=username, service=service)
+    msg = test_geoserver.delete_user(username, service=service)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_user(user="not-found")
+        test_geoserver.delete_user("not-found")
     assert e_info.value.status_code == 404
 
 
@@ -1433,11 +1419,11 @@ def test_get_user_groups(test_geoserver: GeoServer, test_user: str, service: Opt
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("group,service", [("tmp-group", None), ("tmp-group-default", "default")])
 def test_create_group(test_geoserver: GeoServer, group: str, service: Optional[str]) -> None:
-    msg = test_geoserver.create_group(group=group, service=service)
+    msg = test_geoserver.create_user_group(group, service=service)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.create_group(group=group, service=service)
+        test_geoserver.create_user_group(group, service=service)
     status_code = e_info.value.status_code
     assert status_code >= 400 and status_code < 500
 
@@ -1450,7 +1436,7 @@ def test_create_user_to_group(
     test_group: str,
     service: Optional[str],
 ) -> None:
-    msg = test_geoserver.create_user_to_group(user=test_user, group=test_group, service=service)
+    msg = test_geoserver.associate_user(user=test_user, group=test_group, service=service)
     assert isinstance(msg, str)
 
 
@@ -1462,18 +1448,18 @@ def test_delete_user_from_group(
     test_group: str,
     service: Optional[str],
 ) -> None:
-    msg = test_geoserver.delete_user_from_group(user=test_user, group=test_group, service=service)
+    msg = test_geoserver.disassociate_user(user=test_user, group=test_group, service=service)
     assert isinstance(msg, str)
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("group,service", [("tmp-group", None), ("tmp-group-default", "default")])
 def test_delete_group(test_geoserver: GeoServer, group: str, service: Optional[str]) -> None:
-    msg = test_geoserver.delete_group(group=group, service=service)
+    msg = test_geoserver.delete_user_group(group, service=service)
     assert isinstance(msg, str)
 
     with pytest.raises(GeoServerError) as e_info:
-        test_geoserver.delete_group(group=group, service=service)
+        test_geoserver.delete_user_group(group, service=service)
     assert e_info.value.status_code == 404
 
 
@@ -1535,14 +1521,14 @@ def test_get_roles_invalid(
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("role", ["tmp-role"])
 def test_create_role(test_geoserver: GeoServer, role: str) -> None:
-    msg = test_geoserver.create_role(role=role)
+    msg = test_geoserver.create_role(role)
     assert isinstance(msg, str)
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("role", ["tmp-role"])
 def test_delete_role(test_geoserver: GeoServer, role: str) -> None:
-    msg = test_geoserver.delete_role(role=role)
+    msg = test_geoserver.delete_role(role)
     assert isinstance(msg, str)
 
 
