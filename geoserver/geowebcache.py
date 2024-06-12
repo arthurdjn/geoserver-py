@@ -247,7 +247,7 @@ class GeoWebCache(Base):
         """Deletes a single gridset.
 
         Args:
-            gridset: The name of the gridset.
+            name: The name of the gridset.
 
         Returns:
             Success message.
