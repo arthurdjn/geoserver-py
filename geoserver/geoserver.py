@@ -12,6 +12,10 @@ class GeoServer(Base):
     """
     GeoServer Client for Python. Use this class to interact with a GeoServer instance.
 
+    Note:
+        This class implements most of the GeoServer REST API endpoints.
+        You can follow the official GeoServer REST API documentation [here](https://docs.geoserver.org/stable/en/user/rest/).
+
     Args:
         service_url: The URL of the GeoServer instance.
         username: The username to authenticate with the GeoServer instance.
@@ -273,9 +277,6 @@ class GeoServer(Base):
     def create_data_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Adds a new data store to the workspace.
 
-        Note:
-            Read the GeoServer documentation [here](https://docs.geoserver.org/latest/en/api/#1.0.0/datastores.yaml).
-
         Args:
             body: The body of the request used to create the data store.
             workspace: The name of the workspace containing the data stores.
@@ -421,9 +422,6 @@ class GeoServer(Base):
 
     def update_data_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Modify a data store from a workspace.
-
-        Note:
-            Read the official GeoServer documentation [here](https://docs.geoserver.org/latest/en/api/#1.0.0/datastores.yaml).
 
         Args:
             name: The name of the data store to modify.
@@ -1133,11 +1131,13 @@ class GeoServer(Base):
         self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
     ) -> str:
         """Create a new feature type.
-        Note: When creating a new feature type via POST,
-        if no underlying dataset with the specified name exists an attempt will be made to create it.
-        This will work only in cases where the underlying data format supports the creation of new types (such as a database).
-        When creating a feature type in this manner the client should include all attribute information
-        in the feature type representation.
+
+        Note:
+            When creating a new feature type via POST, if no underlying dataset
+            with the specified name exists an attempt will be made to create it.
+            This will work only in cases where the underlying data format supports the creation of new types (such as a database).
+            When creating a feature type in this manner the client should include all attribute information
+            in the feature type representation.
 
         Args:
             body: The body of the request used to create the feature type.
@@ -2829,8 +2829,8 @@ class GeoServer(Base):
 
         Args:
             file: The path to the file to upload.
+            name: Optional. The name of the style. If not provided, it will be inferred from the filename.
             workspace: Optional. The name of the workspace.
-            style: Optional. The name of the style. If not provided, it will be inferred from the filename.
             overwrite: Optional. Whether to overwrite the style if it already exists. Defaults to False.
 
         Returns:
@@ -2976,7 +2976,7 @@ class GeoServer(Base):
         """Deletes a single style.
 
         Args:
-            style: The name of the style.
+            name: The name of the style.
             workspace: Optional. The name of the workspace.
             purge: Optional. Whether to purge the style from the catalog. Defaults to False.
             recurse: Optional. Whether to delete references to the style. Defaults to False.
@@ -3008,9 +3008,6 @@ class GeoServer(Base):
         self, *, workspace: Optional[str] = None, store: Optional[str] = None, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Displays a list of all templates on the server.
-
-        Note:
-            You can check the official documentation [here](https://docs.geoserver.org/stable/en/api/#1.0.0/templates.yaml)
 
         Args:
             workspace: Optional. The name of the workspace.
@@ -3284,9 +3281,6 @@ class GeoServer(Base):
     def get_wfs_transforms(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Displays a list of all the transforms information available on the server.
 
-        Note:
-            Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
-
         Args:
             format: Optional. The format of the response. It can be either "json" or "xml". Defaults to "json".
 
@@ -3308,7 +3302,6 @@ class GeoServer(Base):
         self,
         body: Union[str, Dict[str, Any]],
         *,
-        name: Optional[str] = None,
         source_format: Optional[str] = None,
         output_format: Optional[str] = None,
         output_mime_type: Optional[str] = None,
@@ -3319,9 +3312,6 @@ class GeoServer(Base):
         and the XSLT will have to be uploaded separately using a PUT request with content type application/xslt+xml against the transformation resource.
         If the content type used is application/xslt+xml the server will assume the XSLT itself is being posted,
         and the name, sourceFormat, outputFormat, outputMimeType query parameters will be used to fill in the transform configuration instead.
-
-        Note:
-            Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
 
         Args:
             body: The body of the request used to create the transform.
@@ -3348,7 +3338,6 @@ class GeoServer(Base):
         """
         url = f"{self.service_url}/rest/services/wfs/transforms"
         params = dict(
-            name=name,
             sourceFormat=source_format,
             outputFormat=output_format,
             outputMimeType=output_mime_type,
@@ -3365,9 +3354,6 @@ class GeoServer(Base):
 
     def get_wfs_transform(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
         """Retrieves a single transformation.
-
-        Note:
-            Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
 
         Args:
             name: The name of the transform.
@@ -3389,9 +3375,6 @@ class GeoServer(Base):
 
     def update_wfs_transform(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
         """Modifies a single transform.
-
-        Note:
-            Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
 
         Args:
             name: The name of the transform.
@@ -3423,11 +3406,8 @@ class GeoServer(Base):
     def delete_wfs_transform(self, name: str) -> str:
         """Deletes a single transform.
 
-        Note:
-            Read the corresponding [geoserver documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/transforms.yaml).
-
         Args:
-            transform: The name of the transform.
+            name: The name of the transform.
 
         Returns:
             Success message.
@@ -3572,9 +3552,6 @@ class GeoServer(Base):
         calculate: Optional[List[str]] = None,
     ) -> str:
         """Modifies a single WMS layer.
-
-        Note:
-            Refer to the [GeoServer documentation](https://docs.geoserver.org/latest/en/api/#1.0.0/wmslayers.yaml) for more information.
 
         Args:
             name: The name of the layer.
@@ -3873,9 +3850,9 @@ class GeoServer(Base):
         """Modifies a single WMTS layer.
 
         Args:
-            workspace: The name of the workspace.
-            layer: The name of the layer.
+            name: The name of the layer.
             body: The body of the request used to modify the WMTS layer.
+            workspace: The name of the workspace.
             store: Name of the wmts store.
 
         Returns:
@@ -4096,7 +4073,7 @@ class GeoServer(Base):
         """Modifies a single workspace.
 
         Args:
-            workspace: The name of the workspace.
+            name: The name of the workspace.
             body: The body of the request used to modify the workspace.
 
         Returns:
@@ -4110,7 +4087,7 @@ class GeoServer(Base):
         """Deletes a single workspace.
 
         Args:
-            workspace: The name of the workspace.
+            name: The name of the workspace.
             recurse: Optional. Recursively deletes all resources in the workspace. Defaults to False.
 
         Returns:
@@ -4238,33 +4215,33 @@ class GeoServer(Base):
 
     @overload
     def get_user_groups(
-        self, name: str, *, service: Optional[str] = None, format: Literal["json"] = "json"
+        self, *, user: str, service: Optional[str] = None, format: Literal["json"] = "json"
     ) -> Dict[str, Any]: ...
 
     @overload
-    def get_user_groups(self, name: str, *, service: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_user_groups(self, *, user: str, service: Optional[str] = None, format: Literal["xml"]) -> str: ...
 
     def get_user_groups(
-        self, name: str, *, service: Optional[str] = None, format: Literal["json", "xml"] = "json"
+        self, *, user: str, service: Optional[str] = None, format: Literal["json", "xml"] = "json"
     ) -> Union[str, Dict[str, Any]]:
         """Query all groups in the default user/group service.
 
         Args:
-            name: The name of the user.
+            user: The name of the user.
             service: Optional. The name of the user/group service.
             format: Optional. The format of the response. Can be either "json" or "xml".
 
         Returns:
             The groups.
         """
-        url = f"{self.service_url}/rest/security/usergroup/user/{name}/groups.{format}"
+        url = f"{self.service_url}/rest/security/usergroup/user/{user}/groups.{format}"
         if service is not None:
-            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{name}/groups.{format}"
+            url = f"{self.service_url}/rest/security/usergroup/service/{service}/user/{user}/groups.{format}"
 
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def add_user_to_group(self, user: str, group: str, *, service: Optional[str] = None) -> str:
+    def associate_user(self, user: str, group: str, *, service: Optional[str] = None) -> str:
         """Associate a user with a group in the default user/group service.
 
         Args:
@@ -4282,7 +4259,7 @@ class GeoServer(Base):
         self._request(method="post", url=url)
         return OK_MESSAGE
 
-    def remove_user_from_group(self, user: str, group: str, *, service: Optional[str] = None) -> str:
+    def disassociate_user(self, user: str, group: str, *, service: Optional[str] = None) -> str:
         """Remove a user from a group in the default user/group service.
 
         Args:
@@ -4300,28 +4277,28 @@ class GeoServer(Base):
         self._request(method="delete", url=url)
         return OK_MESSAGE
 
-    def create_group(self, group: str, *, service: Optional[str] = None) -> str:
+    def create_user_group(self, name: str, *, service: Optional[str] = None) -> str:
         """Add a new group to the default user/group service.
 
         Args:
-            group: The name of the group.
+            name: The name of the group.
             service: The name of the user/group service.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/security/usergroup/group/{group}"
+        url = f"{self.service_url}/rest/security/usergroup/group/{name}"
         if service is not None:
-            url = f"{self.service_url}/rest/security/usergroup/service/{service}/group/{group}"
+            url = f"{self.service_url}/rest/security/usergroup/service/{service}/group/{name}"
 
         self._request(method="post", url=url)
         return OK_MESSAGE
 
-    def delete_group(self, group: str, *, service: Optional[str] = None) -> str:
+    def delete_user_group(self, name: str, *, service: Optional[str] = None) -> str:
         """Remove a group from the default user/group service.
 
         Args:
-            group: The name of the group.
+            name: The name of the group.
             service: The name of the user/group service.
 
         Returns:
@@ -4334,9 +4311,9 @@ class GeoServer(Base):
             geoserver.delete_group(group="group")
             ```
         """
-        url = f"{self.service_url}/rest/security/usergroup/group/{group}"
+        url = f"{self.service_url}/rest/security/usergroup/group/{name}"
         if service is not None:
-            url = f"{self.service_url}/rest/security/usergroup/service/{service}/group/{group}"
+            url = f"{self.service_url}/rest/security/usergroup/service/{service}/group/{name}"
 
         self._request(method="delete", url=url)
         return OK_MESSAGE
@@ -4405,30 +4382,30 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_role(self, role: str) -> str:
+    def create_role(self, name: str) -> str:
         """Add a new role to the default user/group service.
 
         Args:
-            role: The name of the role.
+            name: The name of the role.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/security/roles/role/{role}"
+        url = f"{self.service_url}/rest/security/roles/role/{name}"
 
         self._request(method="post", url=url)
         return CREATED_MESSAGE
 
-    def delete_role(self, role: str) -> str:
+    def delete_role(self, name: str) -> str:
         """Remove a role from the default user/group service.
 
         Args:
-            role: The name of the role.
+            name: The name of the role.
 
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/security/roles/role/{role}"
+        url = f"{self.service_url}/rest/security/roles/role/{name}"
 
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
@@ -4446,6 +4423,13 @@ class GeoServer(Base):
 
         Returns:
             Success message.
+
+        Example:
+            To associate a user with a role in the default user/group service, you can use the following code:
+
+            ```python
+            geoserver.associate_role(role="ROLE_ADMIN", user="admin")
+            ```
         """
         if service is not None and group is None and user is None:
             url = f"{self.service_url}/rest/security/roles/service/{service}/role/{role}"
