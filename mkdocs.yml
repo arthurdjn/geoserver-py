@@ -75,6 +75,7 @@ nav:
     - Stores: notebooks/Stores.ipynb
     - Image Mosaic: notebooks/Image Mosaic.ipynb
     - All In One: notebooks/All In One.ipynb
+  - Blog: https://www.arthurdujardin.com/blog/automating-geospatial-tasks-with-geoserver-and-python
 
 markdown_extensions:
   - tables
