@@ -19,11 +19,17 @@ jobs:
       - name: Setup env config
         run: |
           cp .env.example .env
-          sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=geoserver/' .env
-          sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=postgis/' .env
       - name: Setup docker compose
         run: sudo apt install docker-compose
       - name: Start services
         run: docker-compose up -d
+      - name: Wait for services to be healthy
+        run: |
+          while ! docker-compose exec postgis pg_isready -U admin -d db; do
+            sleep 1
+          done
+          while ! docker-compose exec geoserver curl -f http://localhost:8080; do
+            sleep 1
+          done
       - name: Test
         run: poetry run python -m pytest tests/
