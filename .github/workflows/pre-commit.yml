@@ -1,0 +1,26 @@
+name: Pre-Commit Checks
+
+on: [push, pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12
+
+      - name: Setup python environment
+        run: |
+          sudo apt install pipx
+          pipx ensurepath
+          pipx install poetry
+          poetry install
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
