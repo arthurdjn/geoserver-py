@@ -275,10 +275,6 @@ def test_create_coverage(
     if store == TEST_COVERAGE_STORE:
         store = request.getfixturevalue(store)
 
-    print(f"coverage: {coverage}")
-    print(f"store: {store}")
-    print(test_geoserver.get_coverages(workspace=test_workspace))
-
     body = test_geoserver.get_coverage(coverage, workspace=test_workspace, store=store)
     new_coverage = "tmp-coverage"
     body["coverage"]["name"] = new_coverage

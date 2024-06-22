@@ -53,22 +53,22 @@ tests: ## Run tests
 
 .PHONY: show-bump
 show-bump: ## Show available next versions
-	bump-my-version show-bump
+	$(CMD) bump-my-version show-bump
 
 .PHONY: patch
 patch: ## Bump version to next patch
-	bump-my-version show --increment patch current_version new_version --format yaml
-	bump-my-version bump patch
+	$(CMD) bump-my-version show --increment patch current_version new_version --format yaml
+	$(CMD) bump-my-version bump patch
 
 .PHONY: minor
 minor: ## Bump version to next minor
-	bump-my-version show --increment minor current_version new_version --format yaml
-	bump-my-version bump minor
+	$(CMD) bump-my-version show --increment minor current_version new_version --format yaml
+	$(CMD) bump-my-version bump minor
 
 .PHONY: major
 major: ## Bump version to next major
-	bump-my-version show --increment major current_version new_version --format yaml
-	bump-my-version bump major
+	$(CMD) bump-my-version show --increment major current_version new_version --format yaml
+	$(CMD) bump-my-version bump major
 
 # Utils
 
