@@ -19,6 +19,8 @@ jobs:
       - name: Setup env config
         run: |
           cp .env.example .env
+          sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
+          sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
       - name: Setup docker compose
         run: sudo apt install docker-compose
       - name: Start services
