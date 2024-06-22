@@ -15,7 +15,7 @@ jobs:
           cp .env.example .env
           sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
           sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
-      - name: Setup docker compose
+      - name: Setup docker services
         run: sudo apt install docker-compose
       - name: Start services
         run: docker-compose up -d
@@ -25,5 +25,5 @@ jobs:
           pipx ensurepath
           pipx install poetry
           poetry install
-      - name: Test
+      - name: Run tests
         run: poetry run python -m pytest tests/
