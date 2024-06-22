@@ -19,6 +19,8 @@ jobs:
       - name: Setup docker compose
         run: sudo apt install docker-compose
       - name: Start services
-        run: docker-compose up -d
+        run: |
+          cp .env.example .env
+          docker-compose up -d
       - name: Test
         run: poetry run python -m pytest tests/
