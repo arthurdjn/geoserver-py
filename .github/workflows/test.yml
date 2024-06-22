@@ -1,0 +1,24 @@
+name: Tests
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+            python-version: 3.12
+      - name: Setup python environment
+        run: |
+          sudo apt install pipx
+          pipx ensurepath
+          pipx install poetry
+          poetry install
+      - name: Setup docker compose
+        run: sudo apt install docker-compose
+      - name: Start services
+        run: docker-compose up -d
+      - name: Test
+        run: poetry run python -m pytest tests/
