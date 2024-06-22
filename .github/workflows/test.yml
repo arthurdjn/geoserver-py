@@ -25,10 +25,10 @@ jobs:
         run: docker-compose up -d
       - name: Wait for services to be healthy
         run: |
-          while ! docker-compose exec postgis pg_isready -U admin -d db; do
+          while ! docker-compose exec -T postgis pg_isready -U admin -d db; do
             sleep 1
           done
-          while ! docker-compose exec geoserver curl -f http://localhost:8080; do
+          while ! docker-compose exec -T geoserver curl -f http://localhost:8080; do
             sleep 1
           done
       - name: Test
