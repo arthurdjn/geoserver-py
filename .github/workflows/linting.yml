@@ -1,6 +1,6 @@
 name: Pre-Commit Checks
 
-on: [push, pull_request]
+on: push
 
 jobs:
   pre-commit:
@@ -22,5 +22,5 @@ jobs:
           pipx install poetry
           poetry install
 
-      - name: Run pre-commit
-        run: poetry run pre-commit run --all-files
+      - name: Check types
+        run: poetry run mypy .

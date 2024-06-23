@@ -8,23 +8,23 @@ CMD:=poetry run
 
 .PHONY: format
 format: ## Format source code and tests
-	$(CMD) black $(SRC)
+	$(CMD) black .
 
 .PHONY: lint
 lint: ## Lint source code and tests
-	$(CMD) ruff $(SRC)
+	$(CMD) ruff .
 
 .PHONY: lint-fix
 lint-fix: ## Lint and fix source code and tests
-	$(CMD) ruff --fix $(SRC)
+	$(CMD) ruff --fix .
 
 .PHONY: type
 type: ## Type in source code and tests
-	$(CMD) mypy $(SRC)
+	$(CMD) mypy .
 
 .PHONY: isort
 isort: ## Sort imports in source code and tests
-	$(CMD) isort $(SRC)
+	$(CMD) isort .
 
 .PHONY: pre-commit
 pre-commit: ## Run pre-commit hooks

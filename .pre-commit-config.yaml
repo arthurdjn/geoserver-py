@@ -1,34 +1,34 @@
+ci:
+  autofix_prs: true
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit suggestions'
+  autoupdate_schedule: quarterly
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: no-commit-to-branch
         name: No commits to master
+
       - id: check-toml
         name: Check toml
 
-  - repo: local
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
     hooks:
-      - id: format
-        name: Format Code
-        entry: make format
-        language: system
-        types: [python]
-
-      - id: type-check
-        name: Mypy Type Check
-        entry: make type
-        language: system
-        types: [python]
-
       - id: isort
-        name: Sort Imports
-        entry: make isort
-        language: system
-        types: [python]
+        name: Sort imports
 
-      - id: lint
-        name: Linting
-        entry: make lint
-        language: system
-        types: [python]
+  - repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+    - id: black
+      name: Black formatting
+      language_version: python3.12
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.5
+    hooks:
+      - id: ruff
+        name: Ruff formatting
+        args: [--fix, --exit-non-zero-on-fix]
