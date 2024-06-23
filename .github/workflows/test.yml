@@ -4,18 +4,11 @@ on: push
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os_name }} / Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-        include:
-          - os: ubuntu-latest
-            os_name: Ubuntu
-          - os: macos-latest
-            os_name: macOS
 
     steps:
       # check-out repo and set-up python
@@ -29,57 +22,28 @@ jobs:
           python-version: ${{ matrix.python-version }}
       
       # Setup services with docker compose
-      - name: Setup env config (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Setup env config
         run: |
           cp .env.example .env
           sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
           sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
 
-      - name: Setup env config (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cp .env.example .env
-          sed -i '' 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
-          sed -i '' 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
-          
-      - name: Setup docker (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt install docker-compose
+      - name: Setup docker
+        run: sudo apt install docker-compose
 
-      - name: Setup docker (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install docker docker-machine docker-compose
-
-      - name: Run docker services
-        run: |
-          docker --version
-          docker-compose --version
-          docker-compose up -d
+      - name: Start services
+        run: docker-compose up -d
 
       # Install & configure poetry
-      - name: Setup poetry (Ubuntu)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Setup python environment
         run: |
           sudo apt install pipx
           pipx ensurepath
           pipx install poetry
-
-      - name: Setup poetry (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install pipx
-          pipx ensurepath
-          pipx install poetry
-
-      # Install dependencies
-      - name: Install dependencies
-        run: poetry install
+          poetry install
 
       - name: Run tests
-        run: poetry run python -m pytest tests/ --cov=tests --cov-report=xml
+        run: poetry run python -m pytest tests/ --cov --cov-report=xml
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2
