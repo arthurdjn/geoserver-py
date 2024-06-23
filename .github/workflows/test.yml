@@ -43,10 +43,23 @@ jobs:
           sed -i '' 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
           sed -i '' 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
           
-      - name: Setup docker services
-        run: sudo apt install docker-compose
+      - name: Setup docker (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install docker-compose
+          docker-compose up -d
 
-      - name: Start services
+      - name: Setup docker (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install docker
+          colima start
+    
+          # For testcontainers to find the Colima socket
+          # https://github.com/abiosoft/colima/blob/main/docs/FAQ.md#cannot-connect-to-the-docker-daemon-at-unixvarrundockersock-is-the-docker-daemon-running
+          sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
+          
+      - name: Run docker services
         run: docker-compose up -d
 
       # Install & configure poetry
