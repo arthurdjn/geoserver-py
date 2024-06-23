@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - Lowered the minimum required Python version to 3.8 and updated `pre-commit` minimum dependency.
+- Added more tests for MacOS, Windows and Linux and various Python versions.
 
 #### Removed
 

@@ -6,30 +6,35 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
+      # check-out repo and set-up python
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        id: setup-python
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
+      
+      # Setup services with docker compose
       - name: Setup env config
         run: |
           cp .env.example .env
           sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
           sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
 
-      - name: Setup docker services
+      - name: Setup docker
         run: sudo apt install docker-compose
 
       - name: Start services
         run: docker-compose up -d
 
+      # Install & configure poetry
       - name: Setup python environment
         run: |
           sudo apt install pipx
@@ -38,4 +43,10 @@ jobs:
           poetry install
 
       - name: Run tests
-        run: poetry run python -m pytest tests/
+        run: poetry run python -m pytest tests/ --cov --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: false
+  
