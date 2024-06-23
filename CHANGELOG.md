@@ -13,9 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Added
 
+- Added CI/CD pipeline for pre-commit, tests...
+
 #### Changed
 
+- Lowered the minimum required Python version to 3.8 and updated `pre-commit` minimum dependency.
+
 #### Removed
+
+- Removed the TODOS.md file and added the tasks to the issues.
 
 ### New Contributors
 
