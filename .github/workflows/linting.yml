@@ -1,6 +1,6 @@
 name: Pre-Commit Checks
 
-on: [push, pull_request]
+on: push
 
 jobs:
   pre-commit:
@@ -24,4 +24,3 @@ jobs:
 
       - name: Check types
         run: poetry run mypy .
-        
