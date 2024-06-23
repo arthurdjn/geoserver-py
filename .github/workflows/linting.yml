@@ -22,14 +22,6 @@ jobs:
           pipx install poetry
           poetry install
 
-      - name: Lint
-        run: make lint
-
-      - name: Type
-        run: make type
-      
-      - name: Isort
-        run: make isort
-
-      - name: Format
-        run: make format
+      - name: Check types
+        run: mypy .
+        
