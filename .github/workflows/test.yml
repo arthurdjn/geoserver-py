@@ -13,6 +13,8 @@ jobs:
         include:
           - os: ubuntu-latest
             os_name: Ubuntu
+          - os: macos-latest
+            os_name: macOS
 
     steps:
       # check-out repo and set-up python
@@ -39,9 +41,19 @@ jobs:
         run: docker-compose up -d
 
       # Install & configure poetry
-      - name: Setup python environment
+      - name: Setup poetry (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
-        run: curl -sSL https://install.python-poetry.org | python3 -
+        run: |
+          sudo apt install pipx
+          pipx ensurepath
+          pipx install poetry
+
+      - name: Setup poetry (macOS)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          brew install pipx
+          pipx ensurepath
+          pipx install poetry
 
       # Install dependencies
       - name: Install dependencies
