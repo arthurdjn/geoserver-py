@@ -51,7 +51,7 @@ jobs:
       - name: Setup docker (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          brew install docker docker-compose
+          brew install colima docker docker-compose
           
           # Link the Docker Compose v2 plugin so it's understood by the docker CLI
           mkdir -p ~/.docker/cli-plugins
