@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - Renamed and restructured some endpoints / methods to share a similar structure.
-(e.g. `get_workspace(workspace: str)` -> `get_workspace(name: str)`, `get_layer(layer: str)` -> `get_layer(name: str)`)
+  (e.g. `get_workspace(workspace: str)` -> `get_workspace(name: str)`, `get_layer(layer: str)` -> `get_layer(name: str)`)
 - Updated documentation and examples to reflect the changes.
 
 #### Removed

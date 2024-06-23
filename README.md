@@ -11,7 +11,7 @@
 
 </div>
 
----
+______________________________________________________________________
 
 <p align="center">
     Unofficial GeoServer python client. Manage workspaces, permissions, upload vectors, rasters and more. Check out the <a href="https://arthurdjn.github.io/geoserver-py">documentation</a> for more information! <br>
@@ -32,7 +32,7 @@ The purpose of this package is to implement the REST API endpoints with **full t
 
 This package supports both **JSON** and **XML** requests and response. It provides type hints for all the methods and classes, making it easier to work with the package.
 
-> [!NOTE]
+> \[!NOTE\]
 > This package only relies on `requests` as a dependency, which make it extremely lightweight and easy to install: no need to install GDAL!
 
 #### Get requests
@@ -129,18 +129,18 @@ This section if for advanced users who want to contribute to the package. It wil
 
 1. First, clone the repository and install the dependencies:
 
-    ```bash
-    git clone https://github.com/arthurdjn/geoserver-py
-    cd geoserver-py
-    ```
+   ```bash
+   git clone https://github.com/arthurdjn/geoserver-py
+   cd geoserver-py
+   ```
 
-2. Install the dependencies (we recommend using [`poetry`](https://python-poetry.org/) for this)
+1. Install the dependencies (we recommend using [`poetry`](https://python-poetry.org/) for this)
 
-    ```bash
-    poetry install
-    ```
+   ```bash
+   poetry install
+   ```
 
-> [!NOTE]
+> \[!NOTE\]
 > The usual workflow is to create a fork of the repository, clone it, and then install the dependencies.
 
 ### Testing
@@ -177,7 +177,7 @@ Make sure to run the `pre-commit` hook before committing, which will check that 
 make pre-commit
 ```
 
-> [!NOTE]
+> \[!NOTE\]
 > Also make sure the tests are passing.
 
 Once everything is correct, please **create a pull request** to the repository from your local fork.
