@@ -1,4 +1,4 @@
-name: Pre-Commit Checks
+name: Linting Checks
 
 on: push
 
