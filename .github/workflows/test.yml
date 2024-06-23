@@ -4,10 +4,12 @@ on: push
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
@@ -35,14 +37,16 @@ jobs:
         run: docker-compose up -d
 
       # Install & configure poetry
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+      - name: Setup python environment
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install pipx
+          pipx ensurepath
+          pipx install poetry
 
       # Install dependencies
       - name: Install dependencies
-        run: |
-          poetry env use ${{ matrix.python-version }}
-          poetry install
+        run: poetry install
 
       - name: Run tests
         run: poetry run python -m pytest tests/ --cov=tests --cov-report=xml
