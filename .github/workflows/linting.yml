@@ -23,5 +23,5 @@ jobs:
           poetry install
 
       - name: Check types
-        run: mypy .
+        run: poetry run mypy .
         
