@@ -43,41 +43,33 @@ For `POST` and `PUT` requests, you can specify the request body as either a dict
 
 === "Using JSON"
 
-````
-```python
-geoserver.create_workspace(
-    body={"workspace": {"name": "new_workspace"}}
-)
-```
-````
+    ```python
+    geoserver.create_workspace(
+        body={"workspace": {"name": "new_workspace"}}
+    )
+    ```
 
 === "Using XML"
 
-````
-```python
-geoserver.create_workspace(
-    body="<workspace><name>new_workspace</name></workspace>"
-)
-```
-````
+    ```python
+    geoserver.create_workspace(
+        body="<workspace><name>new_workspace</name></workspace>"
+    )
+    ```
 
 Similarly, you can specify the returned format for `GET` requests using the `format` parameter:
 
 === "Using JSON"
 
-````
-```python
-workspaces = geoserver.get_workspaces(format="json")
-```
-````
+    ```python
+    workspaces = geoserver.get_workspaces(format="json")
+    ```
 
 === "Using XML"
 
-````
-```python
-workspaces = geoserver.get_workspaces(format="xml")
-```
-````
+    ```python
+    workspaces = geoserver.get_workspaces(format="xml")
+    ```
 
 ### Error handling
 
