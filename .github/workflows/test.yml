@@ -58,7 +58,7 @@ jobs:
           pipx install poetry
 
       - name: Setup poetry (macOS)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'macos-latest'
         run: |
           brew install pipx
           pipx ensurepath
