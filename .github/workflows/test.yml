@@ -29,12 +29,20 @@ jobs:
           python-version: ${{ matrix.python-version }}
       
       # Setup services with docker compose
-      - name: Setup env config
+      - name: Setup env config (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           cp .env.example .env
           sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
           sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
 
+      - name: Setup env config (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cp .env.example .env
+          sed -i '' 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
+          sed -i '' 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
+          
       - name: Setup docker services
         run: sudo apt install docker-compose
 
