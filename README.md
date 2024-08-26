@@ -78,7 +78,7 @@ from geoserver import GeoServer
 
 # Connect to a GeoServer instance
 geoserver = GeoServer(
-    url="http://localhost:8080/geoserver",
+    service_url="http://localhost:8080/geoserver",
     username="admin",
     password="geoserver"
 )
