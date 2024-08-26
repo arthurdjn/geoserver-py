@@ -30,7 +30,7 @@ The purpose of this package is to implement the REST API endpoints with **full t
 
 ### Features
 
-This package supports both **JSON** and **XML** requests and response. It provides type hints for all the methods and classes, making it easier to work with the package.
+This package supports both **JSON** and **XML** requests and responses. It provides type hints for all the methods and classes, making it easier to work with the package.
 
 > \[!NOTE\]
 > This package only relies on `requests` as a dependency, which make it extremely lightweight and easy to install: no need to install GDAL!
