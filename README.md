@@ -2,10 +2,8 @@
   <a href="" rel="noopener"><img src="https://raw.githubusercontent.com/arthurdjn/geoserver-py/main/medias/geoserver-py.png" alt="Banner"></a>
 
 [![python](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10_%7C_3.11_%7C_3.12-red.svg?color=009ACF&labelColor=6DBA65&logo=python&logoColor=white)](https://www.python.org/)
-[![black](https://img.shields.io/badge/black-formatter-red.svg?color=009ACF&labelColor=6DBA65)](https://github.com/psf/black)
-[![mypy](https://img.shields.io/badge/mypy-typing-red.svg?color=009ACF&labelColor=6DBA65)](https://mypy-lang.org)
 [![ruff](https://img.shields.io/badge/ruff-linter-red.svg?color=009ACF&labelColor=6DBA65&logo=ruff&logoColor=white)](https://docs.astral.sh/ruff)
-[![isort](https://img.shields.io/badge/isort-imports-red.svg?color=009ACF&labelColor=6DBA65)](https://pycqa.github.io/isort/)
+[![mypy](https://img.shields.io/badge/mypy-typing-red.svg?color=009ACF&labelColor=6DBA65)](https://mypy-lang.org)
 [![poetry](https://img.shields.io/badge/poetry-dependencies-red.svg?color=009ACF&labelColor=6DBA65&logo=poetry&logoColor=white)](https://python-poetry.org)
 [![pytest](https://img.shields.io/badge/pytest-testing-red.svg?color=009ACF&labelColor=6DBA65&logo=pytest&logoColor=white)](https://pytest.org)
 
