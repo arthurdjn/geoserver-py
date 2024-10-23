@@ -397,7 +397,6 @@ def test_upload_coverage_store(test_geoserver: GeoServer, test_workspace: str) -
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 def test_get_coverage_store(test_geoserver: GeoServer, test_workspace: str, test_coverage_store: str) -> None:
-
     data = test_geoserver.get_coverage_store(test_coverage_store, workspace=test_workspace)
     assert isinstance(data, dict)
 
