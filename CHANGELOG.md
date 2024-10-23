@@ -19,10 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Lowered the minimum required Python version to 3.8 and updated `pre-commit` minimum dependency.
 - Added more tests for MacOS, Windows and Linux and various Python versions.
+- Upgraded minimum python version from 3.8 to 3.9, to facilitate the use with numpy 2.x.y in development. Updated associated CI/CD pipeline.
 
 #### Removed
 
 - Removed the TODOS.md file and added the tasks to the issues.
+- Removed dev dependencies for black and isort.
 
 ### New Contributors
 
