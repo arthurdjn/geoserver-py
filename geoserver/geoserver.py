@@ -2159,7 +2159,7 @@ class GeoServer(Base):
             geoserver.get_resource(resource="styles/default_point.sld", operation="default")
             ```
         """
-        url = f"{self.service_url}/rest/resources/{path}.{format}"
+        url = f"{self.service_url}/rest/resource/{path}"
         params = dict(operation=operation, format="json")
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
@@ -2175,7 +2175,7 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/resources/{path}"
+        url = f"{self.service_url}/rest/resource/{path}"
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
@@ -2188,7 +2188,7 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/resources/{path}"
+        url = f"{self.service_url}/rest/resource/{path}"
         self._request(method="delete", url=url)
         return DELETED_MESSAGE
 
@@ -2201,7 +2201,7 @@ class GeoServer(Base):
         Returns:
             Success message.
         """
-        url = f"{self.service_url}/rest/resources/{path}"
+        url = f"{self.service_url}/rest/resource/{path}"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
