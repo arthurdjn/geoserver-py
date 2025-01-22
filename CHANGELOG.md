@@ -11,11 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
-- Fixed CI to run on PRs.
-
 #### Added
 
-- Added CI/CD pipeline for pre-commit, tests...
+- Added CI/CD pipeline for pre-commit, tests. Run tests and linter on PRs.
 
 #### Changed
 
