@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
+#### Added
+
+#### Changed
+
+#### Removed
+
+### New Contributors
+
+## 0.2.0 (2025-01-27)
+
+### What's Changed
+
+#### Fixed
+
 - Fix resource calls endpoints (#16).
 
 #### Added
@@ -29,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed dev dependencies for black and isort.
 
 ### New Contributors
+
+- [@mcebria-hg](https://github.com/mcebria-hg)
+- [@lkpanganiban](https://github.com/lkpanganiban)
 
 ## 0.1.0 (2024-06-12)
 
