@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Fixed
 
+- Fix resource calls endpoints (#16).
+
 #### Added
 
 - Added CI/CD pipeline for pre-commit, tests. Run tests and linter on PRs.
