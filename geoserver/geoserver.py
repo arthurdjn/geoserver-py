@@ -2,7 +2,7 @@ import re
 import zipfile
 from io import BufferedReader
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union, overload
+from typing import Any, Literal, overload
 
 from .base import Base
 from .consts import CREATED_MESSAGE, DELETED_MESSAGE, OK_MESSAGE, UPDATED_MESSAGE
@@ -46,30 +46,30 @@ class GeoServer(Base):
     def get_manifest(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_manifest(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
     def get_manifest(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves the manifest of the GeoServer instance, in JSON format.
 
         Args:
@@ -98,30 +98,30 @@ class GeoServer(Base):
     def get_version(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_version(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
     def get_version(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Shows only the details for the high-level components: GeoServer, GeoTools, and GeoWebCache
 
         Args:
@@ -149,30 +149,30 @@ class GeoServer(Base):
     def get_status(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_status(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
     def get_status(
         self,
         *,
-        manifest: Optional[str] = None,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        manifest: str | None = None,
+        key: str | None = None,
+        value: str | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Shows the status details of all installed and configured modules. Status details always include human readable name, and module name. Optional details include version, availability, status message, and links to documentation.
 
         Args:
@@ -199,7 +199,7 @@ class GeoServer(Base):
     # System Status
 
     @overload
-    def get_system_status(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_system_status(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_system_status(self, *, format: Literal["xml"]) -> str: ...
@@ -207,7 +207,7 @@ class GeoServer(Base):
     @overload
     def get_system_status(self, *, format: Literal["html"]) -> str: ...
 
-    def get_system_status(self, *, format: Literal["json", "xml", "html"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_system_status(self, *, format: Literal["json", "xml", "html"] = "json") -> str | dict[str, Any]:
         """Returns a list of system-level information. Major operating systems (Linux, Windows and MacOX) are supported out of the box.
 
         Returns:
@@ -227,12 +227,12 @@ class GeoServer(Base):
     # Data Stores
 
     @overload
-    def get_data_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_data_stores(self, *, workspace: str, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_data_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_data_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_data_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """List all data stores in workspace ws.
 
         Args:
@@ -274,7 +274,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_data_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def create_data_store(self, body: str | dict[str, Any], *, workspace: str) -> str:
         """Adds a new data store to the workspace.
 
         Args:
@@ -312,11 +312,11 @@ class GeoServer(Base):
     # TODO: Update docs
     def upload_data_store(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: str | Path | BufferedReader,
         *,
         workspace: str,
-        name: Optional[str] = None,
-        filename: Optional[str] = None,
+        name: str | None = None,
+        filename: str | None = None,
         format: str = "shp",
         configure: Literal["none", "all"] = "all",
         overwrite: bool = False,
@@ -387,7 +387,7 @@ class GeoServer(Base):
     @overload
     def get_data_store(
         self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_data_store(
@@ -396,7 +396,7 @@ class GeoServer(Base):
 
     def get_data_store(
         self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Controls a particular data store in a given workspace.
 
         Args:
@@ -420,7 +420,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def update_data_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def update_data_store(self, name: str, body: str | dict[str, Any], *, workspace: str) -> str:
         """Modify a data store from a workspace.
 
         Args:
@@ -505,18 +505,18 @@ class GeoServer(Base):
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[str] = None,
+        store: str | None = None,
+        list: str | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_coverages(
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[str] = None,
+        store: str | None = None,
+        list: str | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
@@ -524,10 +524,10 @@ class GeoServer(Base):
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[str] = None,
+        store: str | None = None,
+        list: str | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """List the coverages available for the provided workspace and data store.
 
         Args:
@@ -559,7 +559,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(list=list))
         return response.json() if format == "json" else response.text
 
-    def create_coverage(self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None) -> str:
+    def create_coverage(self, body: str | dict[str, Any], *, workspace: str, store: str | None = None) -> str:
         """Creates a new coverage, the underlying data store must exist.
 
         Args:
@@ -593,10 +593,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_coverage(
@@ -604,7 +604,7 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -614,10 +614,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get an individual coverage.
 
         Args:
@@ -656,10 +656,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_coverage_index(
@@ -667,7 +667,7 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -677,10 +677,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get an individual coverage index structure.
 
         Args:
@@ -715,7 +715,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
-    def update_coverage(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str, store: str) -> str:
+    def update_coverage(self, name: str, body: str | dict[str, Any], *, workspace: str, store: str) -> str:
         """Update an individual coverage
 
         Args:
@@ -796,14 +796,12 @@ class GeoServer(Base):
     # Coverage Stores
 
     @overload
-    def get_coverage_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_coverage_stores(self, *, workspace: str, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_coverage_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_coverage_stores(
-        self, *, workspace: str, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    def get_coverage_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays a list of all styles on the server.
 
         Args:
@@ -845,7 +843,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_coverage_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def create_coverage_store(self, body: str | dict[str, Any], *, workspace: str) -> str:
         """Adds a new coverage store.
 
         Warning:
@@ -875,17 +873,17 @@ class GeoServer(Base):
     # TODO: Update docs
     def upload_coverage_store(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: str | Path | BufferedReader,
         *,
         workspace: str,
-        name: Optional[str] = None,
+        name: str | None = None,
         method: Literal["auto", "file", "external", "url", "remote"] = "auto",
         format: Literal["geotiff", "worldimage", "imagemosaic"],
         update_bbox: bool = False,
         configure: Literal["none", "all"] = "all",
         use_jai_imageread: bool = False,
-        coverage_name: Optional[str] = None,
-        filename: Optional[str] = None,
+        coverage_name: str | None = None,
+        filename: str | None = None,
     ) -> str:
         """Adds a new or update an existing coverage store from a local file.
 
@@ -951,7 +949,7 @@ class GeoServer(Base):
         )
 
         if method == "auto":
-            if isinstance(file, str) and file.startswith(("file:")):
+            if isinstance(file, str) and file.startswith("file:"):
                 method = "external"
             elif isinstance(file, str) and file.startswith(("http://", "https://")):
                 method = "url"
@@ -969,7 +967,7 @@ class GeoServer(Base):
     @overload
     def get_coverage_store(
         self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_coverage_store(
@@ -978,7 +976,7 @@ class GeoServer(Base):
 
     def get_coverage_store(
         self, name: str, *, workspace: str, quiet_on_not_found: bool = False, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get an individual coverage store.
 
         Args:
@@ -1001,7 +999,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json()
 
-    def update_coverage_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def update_coverage_store(self, name: str, body: str | dict[str, Any], *, workspace: str) -> str:
         """Modifies a single coverage store.
 
         Args:
@@ -1094,15 +1092,15 @@ class GeoServer(Base):
 
     @overload
     def get_feature_types(
-        self, *, workspace: str, store: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+        self, *, workspace: str, store: str | None = None, format: Literal["json"] = "json"
+    ) -> dict[str, Any]: ...
 
     @overload
-    def get_feature_types(self, *, workspace: str, store: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_feature_types(self, *, workspace: str, store: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_feature_types(
-        self, *, workspace: str, store: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str, store: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """List all feature types in the workspace.
 
         Args:
@@ -1127,9 +1125,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_feature_type(
-        self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
-    ) -> str:
+    def create_feature_type(self, body: str | dict[str, Any], *, workspace: str, store: str | None = None) -> str:
         """Create a new feature type.
 
         Note:
@@ -1170,10 +1166,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_feature_type(
@@ -1181,7 +1177,7 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -1191,10 +1187,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get an individual feature type.
 
         Args:
@@ -1224,10 +1220,10 @@ class GeoServer(Base):
     def update_feature_type(
         self,
         name: str,
-        body: Union[str, Dict[str, Any]],
+        body: str | dict[str, Any],
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         recalculate: Literal["", "nativebbox", "nativebbox,latlonbbox"] = "",
     ) -> str:
         """Update an individual feature type.
@@ -1274,9 +1270,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body, params=params)
         return UPDATED_MESSAGE
 
-    def delete_feature_type(
-        self, name: str, *, workspace: str, store: Optional[str] = None, recurse: bool = False
-    ) -> str:
+    def delete_feature_type(self, name: str, *, workspace: str, store: str | None = None, recurse: bool = False) -> str:
         """Delete an individual feature type.
 
         Args:
@@ -1309,7 +1303,7 @@ class GeoServer(Base):
         self._request(method="delete", url=url, params=params)
         return DELETED_MESSAGE
 
-    def reset_feature_type_caches(self, name: str, *, workspace: str, store: Optional[str] = None) -> str:
+    def reset_feature_type_caches(self, name: str, *, workspace: str, store: str | None = None) -> str:
         """Resets caches for this feature type.
         This operation is used to force GeoServer to drop caches associated to this feature type,
         and reconnect to the vector source the next time it is needed by a request.
@@ -1348,12 +1342,12 @@ class GeoServer(Base):
     # NOTE: Fonts cannot be added, updated, or removed via the REST API.
 
     @overload
-    def get_fonts(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_fonts(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_fonts(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_fonts(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_fonts(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """List all fonts available to GeoServer.
 
         Args:
@@ -1376,16 +1370,14 @@ class GeoServer(Base):
     # Layer Groups
 
     @overload
-    def get_layer_groups(
-        self, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    def get_layer_groups(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_layer_groups(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_layer_groups(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_layer_groups(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """List all layer groups in the workspace.
 
         Args:
@@ -1409,7 +1401,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def layer_group_exists(self, name: str, *, workspace: Optional[str] = None) -> bool:
+    def layer_group_exists(self, name: str, *, workspace: str | None = None) -> bool:
         """Check if a layer group exists.
 
         Args:
@@ -1426,7 +1418,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_layer_group(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def create_layer_group(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Create a new layer group.
 
         Args:
@@ -1448,17 +1440,17 @@ class GeoServer(Base):
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_layer_group(
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -1467,10 +1459,10 @@ class GeoServer(Base):
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get an individual layer group.
 
         Args:
@@ -1489,9 +1481,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
-    def update_layer_group(
-        self, name: str, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None
-    ) -> str:
+    def update_layer_group(self, name: str, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Update an individual layer group.
 
         Args:
@@ -1509,7 +1499,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_layer_group(self, name: str, *, workspace: Optional[str] = None) -> str:
+    def delete_layer_group(self, name: str, *, workspace: str | None = None) -> str:
         """Delete an individual layer group.
 
         Args:
@@ -1529,14 +1519,14 @@ class GeoServer(Base):
     # Layers
 
     @overload
-    def get_layers(self, *, workspace: Optional[str] = None, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_layers(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_layers(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_layers(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_layers(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """List all layers in the workspace.
 
         Args:
@@ -1553,7 +1543,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_layer(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def create_layer(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Creates a new layer.
 
         Args:
@@ -1575,17 +1565,17 @@ class GeoServer(Base):
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_layer(
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -1594,10 +1584,10 @@ class GeoServer(Base):
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Get an individual layer.
 
         Args:
@@ -1616,7 +1606,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(quietOnNotFound=quiet_on_not_found))
         return response.json() if format == "json" else response.text
 
-    def update_layer(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_layer(self, name: str, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Update an individual layer.
 
         Args:
@@ -1634,7 +1624,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_layer(self, name: str, *, workspace: Optional[str] = None) -> str:
+    def delete_layer(self, name: str, *, workspace: str | None = None) -> str:
         """Delete an individual layer.
 
         Args:
@@ -1654,12 +1644,12 @@ class GeoServer(Base):
     # Logging
 
     @overload
-    def get_logging(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_logging(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_logging(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_logging(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_logging(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays a list of all logging settings on the server.
 
         Args:
@@ -1672,7 +1662,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_logging(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_logging(self, body: str | dict[str, Any]) -> str:
         """Modify the logging settings on the server.
 
         Args:
@@ -1688,12 +1678,12 @@ class GeoServer(Base):
     # Monitoring
 
     @overload
-    def get_monitored_requests(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_monitored_requests(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_monitored_requests(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_monitored_requests(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_monitored_requests(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Returns a list of all requests known to the monitoring system.
         If no list of fields is specified, the full list will be returned,
         with the exception of Class, Body and Error fields.
@@ -1721,12 +1711,12 @@ class GeoServer(Base):
         return OK_MESSAGE
 
     @overload
-    def get_monitored_request(self, id: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_monitored_request(self, id: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_monitored_request(self, id: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_monitored_request(self, id: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_monitored_request(self, id: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Returns the details of a single request.
 
         Args:
@@ -1743,12 +1733,12 @@ class GeoServer(Base):
     # Namespaces
 
     @overload
-    def get_namespaces(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_namespaces(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_namespaces(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_namespaces(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_namespaces(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """List all namespaces on the server.
 
         Args:
@@ -1761,7 +1751,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_namespace(self, body: Union[str, Dict[str, Any]]) -> str:
+    def create_namespace(self, body: str | dict[str, Any]) -> str:
         """Create a new namespace.
 
         Args:
@@ -1775,12 +1765,12 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_namespace(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_namespace(self, name: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_namespace(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_namespace(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_namespace(self, name: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Get an individual namespace.
 
         Args:
@@ -1794,7 +1784,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_namespace(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_namespace(self, name: str, body: str | dict[str, Any]) -> str:
         """Update an individual namespace.
 
         Args:
@@ -1824,16 +1814,14 @@ class GeoServer(Base):
     # Services Settings
 
     @overload
-    def get_wms_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    def get_wms_settings(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_wms_settings(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_wms_settings(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_wms_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Get the WMS settings for the workspace.
 
         Args:
@@ -1850,7 +1838,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wms_settings(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_wms_settings(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Update the WMS settings for the workspace.
 
         Args:
@@ -1867,7 +1855,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wms_settings(self, *, workspace: Optional[str] = None) -> str:
+    def delete_wms_settings(self, *, workspace: str | None = None) -> str:
         """Delete the WMS settings for the workspace.
 
         Args:
@@ -1884,16 +1872,14 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     @overload
-    def get_wfs_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    def get_wfs_settings(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_wfs_settings(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_wfs_settings(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_wfs_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Get the WFS settings for the workspace.
 
         Args:
@@ -1910,7 +1896,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wfs_settings(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_wfs_settings(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Update the WFS settings for the workspace.
 
         Args:
@@ -1927,7 +1913,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wfs_settings(self, *, workspace: Optional[str] = None) -> str:
+    def delete_wfs_settings(self, *, workspace: str | None = None) -> str:
         """Delete the WFS settings for the workspace.
 
         Args:
@@ -1944,16 +1930,14 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     @overload
-    def get_wcs_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    def get_wcs_settings(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_wcs_settings(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_wcs_settings(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_wcs_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Get the WCS settings for the workspace.
 
         Args:
@@ -1970,7 +1954,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wcs_settings(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_wcs_settings(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Update the WCS settings for the workspace.
 
         Args:
@@ -1987,7 +1971,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wcs_settings(self, *, workspace: Optional[str] = None) -> str:
+    def delete_wcs_settings(self, *, workspace: str | None = None) -> str:
         """Delete the WCS settings for the workspace.
 
         Args:
@@ -2005,15 +1989,15 @@ class GeoServer(Base):
 
     @overload
     def get_wmts_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+        self, *, workspace: str | None = None, format: Literal["json"] = "json"
+    ) -> dict[str, Any]: ...
 
     @overload
-    def get_wmts_settings(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_wmts_settings(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_wmts_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Get the WMTS settings for the workspace.
 
         Args:
@@ -2030,7 +2014,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wmts_settings(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_wmts_settings(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Update the WMTS settings for the workspace.
 
         Args:
@@ -2047,7 +2031,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wmts_settings(self, *, workspace: Optional[str] = None) -> str:
+    def delete_wmts_settings(self, *, workspace: str | None = None) -> str:
         """Delete the WMTS settings for the workspace.
 
         Args:
@@ -2064,12 +2048,12 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     @overload
-    def get_oseo_settings(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_oseo_settings(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_oseo_settings(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_oseo_settings(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_oseo_settings(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves Open Search for Earth Observation Service settings globally for the server.
 
         Args:
@@ -2082,7 +2066,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_oseo_settings(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_oseo_settings(self, body: str | dict[str, Any]) -> str:
         """Update the Open Search for Earth Observation Service settings globally for the server.
 
         Args:
@@ -2128,7 +2112,7 @@ class GeoServer(Base):
     @overload
     def get_resource(
         self, path: str, *, operation: Literal["default", "metadata"] = "default", format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_resource(
@@ -2141,7 +2125,7 @@ class GeoServer(Base):
         *,
         operation: Literal["default", "metadata"] = "default",
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Download a resource, list contents of directory, or show formatted resource metadata.
         Response content depends upon parameters.
         With operation=default, if the request is made against a non-directory resource, the content of the resource is returned.
@@ -2164,7 +2148,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def update_resource(self, path: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_resource(self, path: str, body: str | dict[str, Any]) -> str:
         """Upload/move/copy a resource, create directories on the fly (overwrite if exists). For move/copy operations, place source path in body. Copying is not supported for directories.
 
         Args:
@@ -2208,12 +2192,12 @@ class GeoServer(Base):
     # Security
 
     @overload
-    def get_master_password(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_master_password(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_master_password(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_master_password(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_master_password(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays the keystore password. HTTPS is strongly suggested, otherwise password will be sent in plain text.
 
         Args:
@@ -2226,7 +2210,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_master_password(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_master_password(self, body: str | dict[str, Any]) -> str:
         """Changes keystore password. Must supply current keystore password. HTTPS is strongly suggested, otherwise password will be sent in plain text.
 
         Args:
@@ -2239,7 +2223,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def update_password(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_password(self, body: str | dict[str, Any]) -> str:
         """Updates the password for the account used to issue the request.
 
         Args:
@@ -2253,12 +2237,12 @@ class GeoServer(Base):
         return UPDATED_MESSAGE
 
     @overload
-    def get_catalog_mode(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_catalog_mode(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_catalog_mode(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_catalog_mode(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_catalog_mode(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Gets the catalog mode, which specifies how GeoServer will advertise secured layers
         and behave when a secured layer is accessed without the necessary privileges.
 
@@ -2272,7 +2256,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_catalog_mode(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_catalog_mode(self, body: str | dict[str, Any]) -> str:
         """Changes catalog mode. The mode must be one of HIDE, MIXED, or CHALLENGE.
 
         Args:
@@ -2286,12 +2270,12 @@ class GeoServer(Base):
         return UPDATED_MESSAGE
 
     @overload
-    def get_security_layers(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_security_layers(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_security_layers(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_security_layers(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_security_layers(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays the current layer-based security rules.
 
         Args:
@@ -2317,7 +2301,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404, 405])
         return response.status_code == 200
 
-    def create_security_layers(self, body: Union[str, Dict[str, Any]]) -> str:
+    def create_security_layers(self, body: str | dict[str, Any]) -> str:
         """Adds one or more new layer-based rules to the list of security rules.
 
         Args:
@@ -2330,7 +2314,7 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    def update_security_layers(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_security_layers(self, body: str | dict[str, Any]) -> str:
         """Updates one or more layer-based security rules.
 
         Args:
@@ -2343,7 +2327,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_security_layer(self, rule: Optional[str] = None) -> str:
+    def delete_security_layer(self, rule: str | None = None) -> str:
         """Removes one or more layer-based security rules from the list of security rules.
         The `rule` must specified in the last part of the URL and of the form <workspace>.<layer>.[r|w|a]
 
@@ -2361,16 +2345,14 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     @overload
-    def get_security_services(
-        self, *, rule: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    def get_security_services(self, *, rule: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_security_services(self, *, rule: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_security_services(self, *, rule: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_security_services(
-        self, *, rule: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, rule: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Displays the current service-based security rules.
 
         Args:
@@ -2387,7 +2369,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_security_services(self, body: Union[str, Dict[str, Any]], *, rule: Optional[str] = None) -> str:
+    def update_security_services(self, body: str | dict[str, Any], *, rule: str | None = None) -> str:
         """Adds one or more new service-based rules to the list of security rules.
 
         Args:
@@ -2404,7 +2386,7 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_security_services(self, *, rule: Optional[str] = None) -> str:
+    def delete_security_services(self, *, rule: str | None = None) -> str:
         """Removes one or more service-based security rules from the list of security rules.
 
         Args:
@@ -2421,16 +2403,14 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     @overload
-    def get_security_access(
-        self, *, rule: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    def get_security_access(self, *, rule: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_security_access(self, *, rule: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_security_access(self, *, rule: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_security_access(
-        self, *, rule: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, rule: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Displays the current REST access rules.
 
         Args:
@@ -2447,7 +2427,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_security_access(self, body: Union[str, Dict[str, Any]], *, rule: Optional[str] = None) -> str:
+    def create_security_access(self, body: str | dict[str, Any], *, rule: str | None = None) -> str:
         """Adds one or more new REST access rules.
 
         Args:
@@ -2464,7 +2444,7 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    def update_security_access(self, body: Union[str, Dict[str, Any]], *, rule: Optional[str] = None) -> str:
+    def update_security_access(self, body: str | dict[str, Any], *, rule: str | None = None) -> str:
         """Updates one or more REST access rules.
 
         Args:
@@ -2481,7 +2461,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_security_access(self, body: Union[str, Dict[str, Any]], *, rule: Optional[str] = None) -> str:
+    def delete_security_access(self, body: str | dict[str, Any], *, rule: str | None = None) -> str:
         """Removes one or more REST access rules.
 
         Args:
@@ -2501,14 +2481,14 @@ class GeoServer(Base):
     # Settings
 
     @overload
-    def get_settings(self, *, workspace: Optional[str] = None, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_settings(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_settings(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_settings(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_settings(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Displays a list of all global or workspace settings on the server.
 
         Args:
@@ -2525,7 +2505,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_settings(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
+    def update_settings(self, body: str | dict[str, Any], *, workspace: str | None = None) -> str:
         """Updates global or workspace settings on the server.
 
         Args:
@@ -2555,7 +2535,7 @@ class GeoServer(Base):
         response = self._request(method="delete", url=url)
         return response.text
 
-    def get_contact_settings(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_contact_settings(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays a list of all global contact settings on the server.
         This is a subset of what is available at the /settings endpoint.
 
@@ -2584,14 +2564,14 @@ class GeoServer(Base):
     @overload
     def get_coverage_granules(
         self, name: str, *, workspace: str, store: str, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_coverage_granules(self, name: str, *, workspace: str, store: str, format: Literal["xml"]) -> str: ...
 
     def get_coverage_granules(
         self, name: str, *, workspace: str, store: str, limit: int = -1, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Displays a list of all the attributes associated to a particular coverage's granules
 
         Args:
@@ -2643,7 +2623,7 @@ class GeoServer(Base):
     @overload
     def get_coverages_granule(
         self, name: str, *, workspace: str, store: str, coverage: str, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_coverages_granule(
@@ -2652,7 +2632,7 @@ class GeoServer(Base):
 
     def get_coverages_granule(
         self, name: str, *, workspace: str, store: str, coverage: str, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Displays a list of all the attributes associated to a particular coverage's granule
 
         Args:
@@ -2697,14 +2677,14 @@ class GeoServer(Base):
     # Styles
 
     @overload
-    def get_styles(self, *, workspace: Optional[str] = None, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_styles(self, *, workspace: str | None = None, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
-    def get_styles(self, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_styles(self, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_styles(
-        self, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Displays a list of all styles on the server.
 
         Args:
@@ -2721,7 +2701,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def style_exists(self, name: str, *, workspace: Optional[str] = None) -> bool:
+    def style_exists(self, name: str, *, workspace: str | None = None) -> bool:
         """Check if a style exists.
 
         Args:
@@ -2740,15 +2720,15 @@ class GeoServer(Base):
 
     @overload
     def get_style(
-        self, name: str, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+        self, name: str, *, workspace: str | None = None, format: Literal["json"] = "json"
+    ) -> dict[str, Any]: ...
 
     @overload
-    def get_style(self, name: str, *, workspace: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_style(self, name: str, *, workspace: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_style(
-        self, name: str, *, workspace: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, name: str, *, workspace: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Retrieves a single style.
 
         Args:
@@ -2766,7 +2746,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_style(self, body: str, *, workspace: Optional[str] = None) -> str:
+    def create_style(self, body: str, *, workspace: str | None = None) -> str:
         """Creates a new style.
 
         Warning:
@@ -2794,29 +2774,29 @@ class GeoServer(Base):
     @overload
     def upload_style(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: str | Path | BufferedReader,
         *,
         name: str,
-        workspace: Optional[str] = None,
+        workspace: str | None = None,
         overwrite: Literal[True],
     ) -> str: ...
 
     @overload
     def upload_style(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: str | Path | BufferedReader,
         *,
-        name: Optional[str] = None,
-        workspace: Optional[str] = None,
+        name: str | None = None,
+        workspace: str | None = None,
         overwrite: Literal[False] = False,
     ) -> str: ...
 
     def upload_style(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: str | Path | BufferedReader,
         *,
-        name: Optional[str] = None,
-        workspace: Optional[str] = None,
+        name: str | None = None,
+        workspace: str | None = None,
         overwrite: bool = False,
     ) -> str:
         """Uploads a style.
@@ -2888,7 +2868,7 @@ class GeoServer(Base):
         _ = self.update_style(name=name, body=body, workspace=workspace)
         return CREATED_MESSAGE
 
-    def update_style(self, name: str, body: str, *, workspace: Optional[str] = None) -> str:
+    def update_style(self, name: str, body: str, *, workspace: str | None = None) -> str:
         """Updates a single style.
 
         Warning:
@@ -2921,7 +2901,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body, headers={"Content-Type": content_type})
         return UPDATED_MESSAGE
 
-    def download_style(self, name: str, *, workspace: Optional[str] = None) -> str:
+    def download_style(self, name: str, *, workspace: str | None = None) -> str:
         """Downloads a single style.
 
         Args:
@@ -2938,7 +2918,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.text
 
-    def publish_style(self, layer: str, style: str, *, workspace: Optional[str] = None) -> str:
+    def publish_style(self, layer: str, style: str, *, workspace: str | None = None) -> str:
         """Publishes a style to a layer. This is equivalent to setting the default style for a layer,
         which will apply the style to the layer when it is rendered.
 
@@ -2971,7 +2951,7 @@ class GeoServer(Base):
         return UPDATED_MESSAGE
 
     def delete_style(
-        self, name: str, *, workspace: Optional[str] = None, purge: bool = False, recurse: bool = False
+        self, name: str, *, workspace: str | None = None, purge: bool = False, recurse: bool = False
     ) -> str:
         """Deletes a single style.
 
@@ -2996,17 +2976,17 @@ class GeoServer(Base):
 
     @overload
     def get_templates(
-        self, *, workspace: Optional[str] = None, store: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+        self, *, workspace: str | None = None, store: str | None = None, format: Literal["json"] = "json"
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_templates(
-        self, *, workspace: Optional[str] = None, store: Optional[str] = None, format: Literal["xml"]
+        self, *, workspace: str | None = None, store: str | None = None, format: Literal["xml"]
     ) -> str: ...
 
     def get_templates(
-        self, *, workspace: Optional[str] = None, store: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, workspace: str | None = None, store: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Displays a list of all templates on the server.
 
         Args:
@@ -3033,11 +3013,11 @@ class GeoServer(Base):
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
-        data_store: Optional[str] = None,
-        feature_type: Optional[str] = None,
-        coverage_store: Optional[str] = None,
-        coverage: Optional[str] = None,
+        workspace: str | None = None,
+        data_store: str | None = None,
+        feature_type: str | None = None,
+        coverage_store: str | None = None,
+        coverage: str | None = None,
     ) -> str:
         """Displays a list of all templates on the server.
 
@@ -3113,11 +3093,11 @@ class GeoServer(Base):
         name: str,
         body: str,
         *,
-        workspace: Optional[str] = None,
-        data_store: Optional[str] = None,
-        feature_type: Optional[str] = None,
-        coverage_store: Optional[str] = None,
-        coverage: Optional[str] = None,
+        workspace: str | None = None,
+        data_store: str | None = None,
+        feature_type: str | None = None,
+        coverage_store: str | None = None,
+        coverage: str | None = None,
     ) -> str:
         """Inserts or updates a single template registered for use in a workspace (example for GetFeatureInfo WMS operation).
         Overwrites any existing template with the same name and location.
@@ -3195,11 +3175,11 @@ class GeoServer(Base):
         self,
         name: str,
         *,
-        workspace: Optional[str] = None,
-        data_store: Optional[str] = None,
-        feature_type: Optional[str] = None,
-        coverage_store: Optional[str] = None,
-        coverage: Optional[str] = None,
+        workspace: str | None = None,
+        data_store: str | None = None,
+        feature_type: str | None = None,
+        coverage_store: str | None = None,
+        coverage: str | None = None,
     ) -> str:
         """Deletes a single template registered for use on the server.
 
@@ -3273,12 +3253,12 @@ class GeoServer(Base):
     # GeoServer XSLT transforms
 
     @overload
-    def get_wfs_transforms(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wfs_transforms(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_wfs_transforms(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_wfs_transforms(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_wfs_transforms(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays a list of all the transforms information available on the server.
 
         Args:
@@ -3300,12 +3280,12 @@ class GeoServer(Base):
 
     def create_wfs_transform(
         self,
-        body: Union[str, Dict[str, Any]],
+        body: str | dict[str, Any],
         *,
-        source_format: Optional[str] = None,
-        output_format: Optional[str] = None,
-        output_mime_type: Optional[str] = None,
-        file_extension: Optional[str] = None,
+        source_format: str | None = None,
+        output_format: str | None = None,
+        output_mime_type: str | None = None,
+        file_extension: str | None = None,
     ) -> str:
         """Adds a new transform to the server.
         If the content type used is application/xml the server will assume a definition is being posted,
@@ -3347,12 +3327,12 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_wfs_transform(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wfs_transform(self, name: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_wfs_transform(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_wfs_transform(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_wfs_transform(self, name: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves a single transformation.
 
         Args:
@@ -3373,7 +3353,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wfs_transform(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_wfs_transform(self, name: str, body: str | dict[str, Any]) -> str:
         """Modifies a single transform.
 
         Args:
@@ -3430,18 +3410,18 @@ class GeoServer(Base):
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[Literal["available"]] = None,
+        store: str | None = None,
+        list: Literal["available"] | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_wms_layers(
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[Literal["available"]] = None,
+        store: str | None = None,
+        list: Literal["available"] | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
@@ -3449,10 +3429,10 @@ class GeoServer(Base):
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[Literal["available"]] = None,
+        store: str | None = None,
+        list: Literal["available"] | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves the WMS layers available on the server.
 
         Args:
@@ -3472,7 +3452,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def create_wms_layer(self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None) -> str:
+    def create_wms_layer(self, body: str | dict[str, Any], *, workspace: str, store: str | None = None) -> str:
         """Creates a new WMS layer.
 
         Args:
@@ -3496,10 +3476,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_wms_layer(
@@ -3507,7 +3487,7 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -3517,10 +3497,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves a single WMS layer.
 
         Args:
@@ -3545,11 +3525,11 @@ class GeoServer(Base):
     def update_wms_layer(
         self,
         name: str,
-        body: Union[str, Dict[str, Any]],
+        body: str | dict[str, Any],
         *,
         workspace: str,
-        store: Optional[str] = None,
-        calculate: Optional[List[str]] = None,
+        store: str | None = None,
+        calculate: list[str] | None = None,
     ) -> str:
         """Modifies a single WMS layer.
 
@@ -3583,7 +3563,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body, params=params)
         return UPDATED_MESSAGE
 
-    def delete_wms_layer(self, name: str, *, workspace: str, store: Optional[str] = None, recurse: bool = False) -> str:
+    def delete_wms_layer(self, name: str, *, workspace: str, store: str | None = None, recurse: bool = False) -> str:
         """Deletes a single WMS layer.
 
         Args:
@@ -3606,12 +3586,12 @@ class GeoServer(Base):
     # WMS Stores
 
     @overload
-    def get_wms_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wms_stores(self, *, workspace: str, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_wms_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_wms_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_wms_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the WMS stores available on the server.
 
         Args:
@@ -3625,7 +3605,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_wms_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def create_wms_store(self, body: str | dict[str, Any], *, workspace: str) -> str:
         """Creates a new WMS store.
 
         Args:
@@ -3654,14 +3634,14 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_wms_store(self, name: str, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wms_store(self, name: str, *, workspace: str, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_wms_store(self, name: str, *, workspace: str, format: Literal["xml"]) -> str: ...
 
     def get_wms_store(
         self, name: str, *, workspace: str, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves a single WMS store.
 
         Args:
@@ -3676,7 +3656,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wms_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def update_wms_store(self, name: str, body: str | dict[str, Any], *, workspace: str) -> str:
         """Modifies a single WMS store.
 
         Args:
@@ -3712,18 +3692,18 @@ class GeoServer(Base):
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[Literal["available"]] = None,
+        store: str | None = None,
+        list: Literal["available"] | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_wmts_layers(
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[Literal["available"]] = None,
+        store: str | None = None,
+        list: Literal["available"] | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
@@ -3731,10 +3711,10 @@ class GeoServer(Base):
         self,
         *,
         workspace: str,
-        store: Optional[str] = None,
-        list: Optional[Literal["available"]] = None,
+        store: str | None = None,
+        list: Literal["available"] | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves the WMTS layers available on the server.
 
         Args:
@@ -3754,7 +3734,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
-    def wmts_layer_exists(self, name: str, *, workspace: str, store: Optional[str] = None) -> bool:
+    def wmts_layer_exists(self, name: str, *, workspace: str, store: str | None = None) -> bool:
         """Check if a WMTS layer exists.
 
         Args:
@@ -3772,9 +3752,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_wmts_layer(
-        self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
-    ) -> str:
+    def create_wmts_layer(self, body: str | dict[str, Any], *, workspace: str, store: str | None = None) -> str:
         """Creates a new WMTS layer.
 
         Args:
@@ -3798,10 +3776,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_wmts_layer(
@@ -3809,7 +3787,7 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["xml"],
     ) -> str: ...
@@ -3819,10 +3797,10 @@ class GeoServer(Base):
         name: str,
         *,
         workspace: str,
-        store: Optional[str] = None,
+        store: str | None = None,
         quiet_on_not_found: bool = False,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves a single WMTS layer.
 
         Args:
@@ -3845,7 +3823,7 @@ class GeoServer(Base):
         return response.json() if format == "json" else response.text
 
     def update_wmts_layer(
-        self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
+        self, name: str, body: str | dict[str, Any], *, workspace: str, store: str | None = None
     ) -> str:
         """Modifies a single WMTS layer.
 
@@ -3865,9 +3843,7 @@ class GeoServer(Base):
         self._request(method="put", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_wmts_layer(
-        self, name: str, *, workspace: str, store: Optional[str] = None, recurse: bool = False
-    ) -> str:
+    def delete_wmts_layer(self, name: str, *, workspace: str, store: str | None = None, recurse: bool = False) -> str:
         """Deletes a single WMTS layer.
 
         Args:
@@ -3891,12 +3867,12 @@ class GeoServer(Base):
     # WMTS Stores
 
     @overload
-    def get_wmts_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wmts_stores(self, *, workspace: str, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_wmts_stores(self, *, workspace: str, format: Literal["xml"]) -> str: ...
 
-    def get_wmts_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_wmts_stores(self, *, workspace: str, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the WMTS stores available on the server.
 
         Args:
@@ -3924,7 +3900,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_wmts_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def create_wmts_store(self, body: str | dict[str, Any], *, workspace: str) -> str:
         """Creates a new WMTS store.
 
         Args:
@@ -3939,14 +3915,14 @@ class GeoServer(Base):
         return CREATED_MESSAGE
 
     @overload
-    def get_wmts_store(self, name: str, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_wmts_store(self, name: str, *, workspace: str, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_wmts_store(self, name: str, *, workspace: str, format: Literal["xml"]) -> str: ...
 
     def get_wmts_store(
         self, name: str, *, workspace: str, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves a single WMTS store.
 
         Args:
@@ -3961,7 +3937,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_wmts_store(self, name: str, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
+    def update_wmts_store(self, name: str, body: str | dict[str, Any], *, workspace: str) -> str:
         """Modifies a single WMTS store.
 
         Args:
@@ -3993,12 +3969,12 @@ class GeoServer(Base):
     # Workspaces
 
     @overload
-    def get_workspaces(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_workspaces(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_workspaces(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_workspaces(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_workspaces(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays a list of all workspaces on the server.
 
         Args:
@@ -4024,7 +4000,7 @@ class GeoServer(Base):
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
 
-    def create_workspace(self, body: Union[str, Dict[str, Any]]) -> str:
+    def create_workspace(self, body: str | dict[str, Any]) -> str:
         """Creates a new workspace.
 
         Args:
@@ -4050,12 +4026,12 @@ class GeoServer(Base):
         return self.create_workspace(body=body)
 
     @overload
-    def get_workspace(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_workspace(self, name: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_workspace(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_workspace(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_workspace(self, name: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Displays a single workspace on the server.
 
         Args:
@@ -4069,7 +4045,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_workspace(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
+    def update_workspace(self, name: str, body: str | dict[str, Any]) -> str:
         """Modifies a single workspace.
 
         Args:
@@ -4102,17 +4078,15 @@ class GeoServer(Base):
 
     @overload
     def get_users(
-        self, *, service: Optional[str] = None, group: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+        self, *, service: str | None = None, group: str | None = None, format: Literal["json"] = "json"
+    ) -> dict[str, Any]: ...
 
     @overload
-    def get_users(
-        self, *, service: Optional[str] = None, group: Optional[str] = None, format: Literal["xml"]
-    ) -> str: ...
+    def get_users(self, *, service: str | None = None, group: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_users(
-        self, *, service: Optional[str] = None, group: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, service: str | None = None, group: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Query all users in the default user/group service.
 
         Args:
@@ -4135,7 +4109,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def create_user(self, body: Union[str, Dict[str, Any]], *, service: Optional[str] = None) -> str:
+    def create_user(self, body: str | dict[str, Any], *, service: str | None = None) -> str:
         """Add a new user to the default user/group service.
 
         Args:
@@ -4163,7 +4137,7 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    def update_user(self, name: str, body: Union[str, Dict[str, Any]], *, service: Optional[str] = None) -> str:
+    def update_user(self, name: str, body: str | dict[str, Any], *, service: str | None = None) -> str:
         """Update an existing user in the default user/group service.
 
         Args:
@@ -4196,7 +4170,7 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return UPDATED_MESSAGE
 
-    def delete_user(self, name: str, *, service: Optional[str] = None) -> str:
+    def delete_user(self, name: str, *, service: str | None = None) -> str:
         """Remove an existing user from the default user/group service.
 
         Args:
@@ -4215,15 +4189,15 @@ class GeoServer(Base):
 
     @overload
     def get_user_groups(
-        self, *, user: str, service: Optional[str] = None, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+        self, *, user: str, service: str | None = None, format: Literal["json"] = "json"
+    ) -> dict[str, Any]: ...
 
     @overload
-    def get_user_groups(self, *, user: str, service: Optional[str] = None, format: Literal["xml"]) -> str: ...
+    def get_user_groups(self, *, user: str, service: str | None = None, format: Literal["xml"]) -> str: ...
 
     def get_user_groups(
-        self, *, user: str, service: Optional[str] = None, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+        self, *, user: str, service: str | None = None, format: Literal["json", "xml"] = "json"
+    ) -> str | dict[str, Any]:
         """Query all groups in the default user/group service.
 
         Args:
@@ -4241,7 +4215,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def associate_user(self, user: str, group: str, *, service: Optional[str] = None) -> str:
+    def associate_user(self, user: str, group: str, *, service: str | None = None) -> str:
         """Associate a user with a group in the default user/group service.
 
         Args:
@@ -4259,7 +4233,7 @@ class GeoServer(Base):
         self._request(method="post", url=url)
         return OK_MESSAGE
 
-    def disassociate_user(self, user: str, group: str, *, service: Optional[str] = None) -> str:
+    def disassociate_user(self, user: str, group: str, *, service: str | None = None) -> str:
         """Remove a user from a group in the default user/group service.
 
         Args:
@@ -4277,7 +4251,7 @@ class GeoServer(Base):
         self._request(method="delete", url=url)
         return OK_MESSAGE
 
-    def create_user_group(self, name: str, *, service: Optional[str] = None) -> str:
+    def create_user_group(self, name: str, *, service: str | None = None) -> str:
         """Add a new group to the default user/group service.
 
         Args:
@@ -4294,7 +4268,7 @@ class GeoServer(Base):
         self._request(method="post", url=url)
         return OK_MESSAGE
 
-    def delete_user_group(self, name: str, *, service: Optional[str] = None) -> str:
+    def delete_user_group(self, name: str, *, service: str | None = None) -> str:
         """Remove a group from the default user/group service.
 
         Args:
@@ -4324,30 +4298,30 @@ class GeoServer(Base):
     def get_roles(
         self,
         *,
-        service: Optional[str] = None,
-        group: Optional[str] = None,
-        user: Optional[str] = None,
+        service: str | None = None,
+        group: str | None = None,
+        user: str | None = None,
         format: Literal["json"] = "json",
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_roles(
         self,
         *,
-        service: Optional[str] = None,
-        group: Optional[str] = None,
-        user: Optional[str] = None,
+        service: str | None = None,
+        group: str | None = None,
+        user: str | None = None,
         format: Literal["xml"],
     ) -> str: ...
 
     def get_roles(
         self,
         *,
-        service: Optional[str] = None,
-        group: Optional[str] = None,
-        user: Optional[str] = None,
+        service: str | None = None,
+        group: str | None = None,
+        user: str | None = None,
         format: Literal["json", "xml"] = "json",
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Query all roles in the default user/group service.
 
         Args:
@@ -4411,7 +4385,7 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     def associate_role(
-        self, role: str, *, service: Optional[str] = None, group: Optional[str] = None, user: Optional[str] = None
+        self, role: str, *, service: str | None = None, group: str | None = None, user: str | None = None
     ) -> str:
         """Associate a user with a role in the default user/group service.
 
@@ -4448,7 +4422,7 @@ class GeoServer(Base):
         return OK_MESSAGE
 
     def disassociate_role(
-        self, role: str, *, service: Optional[str] = None, group: Optional[str] = None, user: Optional[str] = None
+        self, role: str, *, service: str | None = None, group: str | None = None, user: str | None = None
     ) -> str:
         """Disassociate a user with a role in the default user/group service.
 

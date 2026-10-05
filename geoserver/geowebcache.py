@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Union, overload
+from typing import Any, Literal, overload
 
 from .base import Base
 from .consts import CREATED_MESSAGE, DELETED_MESSAGE, UPDATED_MESSAGE
@@ -6,12 +6,12 @@ from .consts import CREATED_MESSAGE, DELETED_MESSAGE, UPDATED_MESSAGE
 
 class GeoWebCache(Base):
     @overload
-    def get_blob_stores(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_blob_stores(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_blob_stores(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_blob_stores(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_blob_stores(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the blob stores available on the server.
 
         Args:
@@ -25,12 +25,12 @@ class GeoWebCache(Base):
         return response.json() if format == "json" else response.text
 
     @overload
-    def get_blob_store(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_blob_store(self, name: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_blob_store(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_blob_store(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_blob_store(self, name: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves a single blob store.
 
         Args:
@@ -44,7 +44,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_blob_store(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
+    def insert_blob_store(self, name: str, body: str | dict[str, Any]) -> str:
         """Creates a new blob store.
 
         Args:
@@ -76,14 +76,14 @@ class GeoWebCache(Base):
     @overload
     def get_layer_bounds(
         self, layer: str, srs: str, type: str, *, format: Literal["json"] = "json"
-    ) -> Dict[str, Any]: ...
+    ) -> dict[str, Any]: ...
 
     @overload
     def get_layer_bounds(self, layer: str, srs: str, type: str, *, format: Literal["xml"]) -> str: ...
 
     def get_layer_bounds(
         self, layer: str, srs: str, type: str, *, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Retrieves the bounds for a layer.
 
         Args:
@@ -102,12 +102,12 @@ class GeoWebCache(Base):
     # Disk Quota
 
     @overload
-    def get_diskquota(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_diskquota(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_diskquota(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_diskquota(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_diskquota(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the disk quota settings.
 
         Args:
@@ -120,7 +120,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_diskquota(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_diskquota(self, body: str | dict[str, Any]) -> str:
         """Modifies the disk quota settings.
 
         Args:
@@ -134,14 +134,14 @@ class GeoWebCache(Base):
         return UPDATED_MESSAGE
 
     @overload
-    def filter_update(self, filter: str, update: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def filter_update(self, filter: str, update: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def filter_update(self, filter: str, update: str, *, format: Literal["xml"]) -> str: ...
 
     def filter_update(
         self, filter: str, update: str, *, format: Literal["json", "xml"] = "json"
-    ) -> Union[str, Dict[str, Any]]:
+    ) -> str | dict[str, Any]:
         """Restfully updates the given filter with parameters provided in the xml or zip.
 
         Args:
@@ -157,12 +157,12 @@ class GeoWebCache(Base):
         return response.json() if format == "json" else response.text
 
     @overload
-    def get_global_settings(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_global_settings(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_global_settings(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_global_settings(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_global_settings(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the global settings.
 
         Args:
@@ -175,7 +175,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def update_global_settings(self, body: Union[str, Dict[str, Any]]) -> str:
+    def update_global_settings(self, body: str | dict[str, Any]) -> str:
         """Modifies the global settings.
 
         Args:
@@ -191,12 +191,12 @@ class GeoWebCache(Base):
     # Gridsets
 
     @overload
-    def get_gridsets(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_gridsets(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_gridsets(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_gridsets(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_gridsets(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the gridsets available on the server.
 
         Args:
@@ -210,12 +210,12 @@ class GeoWebCache(Base):
         return response.json() if format == "json" else response.text
 
     @overload
-    def get_gridset(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_gridset(self, name: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_gridset(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_gridset(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_gridset(self, name: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves a single gridset.
 
         Args:
@@ -229,7 +229,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_gridset(self, name: str, body: Union[str, Dict[str, Any]]) -> str:
+    def insert_gridset(self, name: str, body: str | dict[str, Any]) -> str:
         """Creates a new configured gridset on the server, or modifies an existing gridset.
 
         Args:
@@ -259,12 +259,12 @@ class GeoWebCache(Base):
     # Layers
 
     @overload
-    def get_layers(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_layers(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_layers(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_layers(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_layers(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the layers available on the server.
 
         Args:
@@ -278,12 +278,12 @@ class GeoWebCache(Base):
         return response.json() if format == "json" else response.text
 
     @overload
-    def get_layer(self, name: str, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_layer(self, name: str, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_layer(self, name: str, *, format: Literal["xml"]) -> str: ...
 
-    def get_layer(self, name: str, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_layer(self, name: str, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves a single layer.
 
         Args:
@@ -297,7 +297,7 @@ class GeoWebCache(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def insert_layer(self, name: str, body: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
+    def insert_layer(self, name: str, body: str | dict[str, Any]) -> dict[str, Any]:
         """Creates a new layer on the server, or modifies an existing layer.
 
         Args:
@@ -327,12 +327,12 @@ class GeoWebCache(Base):
     # Mass Truncate
 
     @overload
-    def get_masstruncate(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_masstruncate(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_masstruncate(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_masstruncate(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_masstruncate(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Returns xml containing the request type capabilities for mass truncation.
 
         Args:
@@ -366,12 +366,12 @@ class GeoWebCache(Base):
     # Statistics
 
     @overload
-    def get_statistics(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_statistics(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_statistics(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_statistics(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_statistics(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Retrieves the statistics for a layer or gridset.
 
         Args:
@@ -403,12 +403,12 @@ class GeoWebCache(Base):
     # Seed
 
     @overload
-    def get_seed(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
+    def get_seed(self, *, format: Literal["json"] = "json") -> dict[str, Any]: ...
 
     @overload
     def get_seed(self, *, format: Literal["xml"]) -> str: ...
 
-    def get_seed(self, *, format: Literal["json", "xml"] = "json") -> Union[str, Dict[str, Any]]:
+    def get_seed(self, *, format: Literal["json", "xml"] = "json") -> str | dict[str, Any]:
         """Query's and returns a json array of the status for all currently running task.
         The array contains a set of long in the following order:
         [tiles processed, total number of tiles to process, number of remaining tiles, Task ID, Task status].

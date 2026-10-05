@@ -1,5 +1,5 @@
 import subprocess
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 from helpers import GEOSERVER_ADMIN_PASSWORD, GEOSERVER_ADMIN_USER, GEOSERVER_URL

@@ -1,5 +1,5 @@
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, Optional
 
 import pytest
 from helpers import GEOSERVER_RUNNING, GEOSERVER_URL
@@ -252,7 +252,7 @@ def test_reset_data_store_caches(test_geoserver: GeoServer, test_workspace: str,
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("store", [None, TEST_COVERAGE_STORE])
 def test_get_coverages(
-    test_geoserver: GeoServer, test_workspace: str, store: Optional[str], request: FixtureRequest
+    test_geoserver: GeoServer, test_workspace: str, store: str | None, request: FixtureRequest
 ) -> None:
     if store == TEST_COVERAGE_STORE:
         store = request.getfixturevalue(store)
@@ -466,7 +466,7 @@ def test_get_feature_type(
     test_geoserver: GeoServer,
     test_workspace: str,
     test_feature_type: str,
-    store: Optional[str],
+    store: str | None,
     request: FixtureRequest,
 ) -> None:
     if store == TEST_DATA_STORE:
@@ -483,7 +483,7 @@ def test_update_feature_type(
     test_workspace: str,
     test_feature_type: str,
     test_data_store: str,
-    recalculate: Optional[str],
+    recalculate: str | None,
 ) -> None:
     data = test_geoserver.get_feature_type(test_feature_type, workspace=test_workspace, store=test_data_store)
     assert isinstance(data, dict)
@@ -1354,8 +1354,8 @@ def test_update_workspace(test_geoserver: GeoServer, test_workspace: str) -> Non
 )
 def test_get_users(
     test_geoserver: GeoServer,
-    service: Optional[str],
-    group: Optional[str],
+    service: str | None,
+    group: str | None,
     request: FixtureRequest,
 ) -> None:
     if group == TEST_GROUP:
@@ -1373,7 +1373,7 @@ def test_get_users_invalid(test_geoserver: GeoServer) -> None:
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("username,service", [("test", None), ("test2", "default")])
-def test_create_user(test_geoserver: GeoServer, username: str, service: Optional[str]) -> None:
+def test_create_user(test_geoserver: GeoServer, username: str, service: str | None) -> None:
     body = {
         "user": {
             "userName": username,
@@ -1391,7 +1391,7 @@ def test_create_user(test_geoserver: GeoServer, username: str, service: Optional
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("username,service", [("test", None), ("test2", "default")])
-def test_update_user(test_geoserver: GeoServer, username: str, service: Optional[str]) -> None:
+def test_update_user(test_geoserver: GeoServer, username: str, service: str | None) -> None:
     data = test_geoserver.get_users()
     user = next((u for u in data["users"] if u["userName"] == username), None)
     assert user is not None
@@ -1407,7 +1407,7 @@ def test_update_user(test_geoserver: GeoServer, username: str, service: Optional
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("username,service", [("test", None), ("test2", "default")])
-def test_delete_user(test_geoserver: GeoServer, username: str, service: Optional[str]) -> None:
+def test_delete_user(test_geoserver: GeoServer, username: str, service: str | None) -> None:
     msg = test_geoserver.delete_user(username, service=service)
     assert isinstance(msg, str)
 
@@ -1418,14 +1418,14 @@ def test_delete_user(test_geoserver: GeoServer, username: str, service: Optional
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("service", [None, "default"])
-def test_get_user_groups(test_geoserver: GeoServer, test_user: str, service: Optional[str]) -> None:
+def test_get_user_groups(test_geoserver: GeoServer, test_user: str, service: str | None) -> None:
     data = test_geoserver.get_user_groups(user=test_user, service=service)
     assert isinstance(data, dict)
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("group,service", [("tmp-group", None), ("tmp-group-default", "default")])
-def test_create_group(test_geoserver: GeoServer, group: str, service: Optional[str]) -> None:
+def test_create_group(test_geoserver: GeoServer, group: str, service: str | None) -> None:
     msg = test_geoserver.create_user_group(group, service=service)
     assert isinstance(msg, str)
 
@@ -1441,7 +1441,7 @@ def test_create_user_to_group(
     test_geoserver: GeoServer,
     test_user: str,
     test_group: str,
-    service: Optional[str],
+    service: str | None,
 ) -> None:
     msg = test_geoserver.associate_user(user=test_user, group=test_group, service=service)
     assert isinstance(msg, str)
@@ -1453,7 +1453,7 @@ def test_delete_user_from_group(
     test_geoserver: GeoServer,
     test_user: str,
     test_group: str,
-    service: Optional[str],
+    service: str | None,
 ) -> None:
     msg = test_geoserver.disassociate_user(user=test_user, group=test_group, service=service)
     assert isinstance(msg, str)
@@ -1461,7 +1461,7 @@ def test_delete_user_from_group(
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
 @pytest.mark.parametrize("group,service", [("tmp-group", None), ("tmp-group-default", "default")])
-def test_delete_group(test_geoserver: GeoServer, group: str, service: Optional[str]) -> None:
+def test_delete_group(test_geoserver: GeoServer, group: str, service: str | None) -> None:
     msg = test_geoserver.delete_user_group(group, service=service)
     assert isinstance(msg, str)
 
@@ -1486,9 +1486,9 @@ def test_delete_group(test_geoserver: GeoServer, group: str, service: Optional[s
 )
 def test_get_roles(
     test_geoserver: GeoServer,
-    service: Optional[str],
-    group: Optional[str],
-    user: Optional[str],
+    service: str | None,
+    group: str | None,
+    user: str | None,
     request: FixtureRequest,
 ) -> None:
     if group == TEST_GROUP:
@@ -1511,9 +1511,9 @@ def test_get_roles(
 )
 def test_get_roles_invalid(
     test_geoserver: GeoServer,
-    service: Optional[str],
-    group: Optional[str],
-    user: Optional[str],
+    service: str | None,
+    group: str | None,
+    user: str | None,
     request: FixtureRequest,
 ) -> None:
     if group == TEST_GROUP:
@@ -1553,9 +1553,9 @@ def test_delete_role(test_geoserver: GeoServer, role: str) -> None:
 def test_associate_role(
     test_geoserver: GeoServer,
     role: str,
-    service: Optional[str],
-    group: Optional[str],
-    user: Optional[str],
+    service: str | None,
+    group: str | None,
+    user: str | None,
     request: FixtureRequest,
 ) -> None:
     if role == TEST_ROLE:
@@ -1580,9 +1580,9 @@ def test_associate_role(
 def test_associate_role_invalid(
     test_geoserver: GeoServer,
     role: str,
-    service: Optional[str],
-    group: Optional[str],
-    user: Optional[str],
+    service: str | None,
+    group: str | None,
+    user: str | None,
     request: FixtureRequest,
 ) -> None:
     if role == TEST_ROLE:
@@ -1610,9 +1610,9 @@ def test_associate_role_invalid(
 def test_disassociate_role(
     test_geoserver: GeoServer,
     role: str,
-    service: Optional[str],
-    group: Optional[str],
-    user: Optional[str],
+    service: str | None,
+    group: str | None,
+    user: str | None,
     request: FixtureRequest,
 ) -> None:
     if role == TEST_ROLE:
@@ -1637,9 +1637,9 @@ def test_disassociate_role(
 def test_disassociate_role_invalid(
     test_geoserver: GeoServer,
     role: str,
-    service: Optional[str],
-    group: Optional[str],
-    user: Optional[str],
+    service: str | None,
+    group: str | None,
+    user: str | None,
     request: FixtureRequest,
 ) -> None:
     if role == TEST_ROLE:
