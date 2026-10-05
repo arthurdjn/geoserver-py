@@ -1,10 +1,9 @@
 from io import BufferedReader
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
+from typing import Any, Literal, TypedDict, Unpack
 
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
-from typing_extensions import Unpack
 
 from .exceptions import GeoServerError
 from .utils import find_html_body, find_html_description_section, find_html_message_section, is_html
@@ -12,30 +11,30 @@ from .utils import find_html_body, find_html_description_section, find_html_mess
 
 class RequestParams(TypedDict, total=False):
     data: Any
-    json: Dict[str, Any]
-    params: Dict[str, Any]
-    headers: Dict[str, Any]
-    auth: Optional[AuthBase]
-    cookies: Dict[str, Any]
+    json: dict[str, Any]
+    params: dict[str, Any]
+    headers: dict[str, Any]
+    auth: AuthBase | None
+    cookies: dict[str, Any]
     allow_redirects: bool
     proxies: Any
     verify: bool
-    cert: Optional[str]
+    cert: str | None
 
 
 class Base:
     def __init__(
         self,
         service_url: str = "http://localhost:8080/geoserver",
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        headers: Optional[Dict[str, Any]] = None,
-        cookies: Optional[Dict[str, Any]] = None,
-        auth: Optional[AuthBase] = None,
+        username: str | None = None,
+        password: str | None = None,
+        headers: dict[str, Any] | None = None,
+        cookies: dict[str, Any] | None = None,
+        auth: AuthBase | None = None,
         allow_redirects: bool = True,
         proxies: Any = None,
         verify: bool = True,
-        cert: Optional[str] = None,
+        cert: str | None = None,
     ):
         if auth is None and username is not None and password is not None:
             auth = HTTPBasicAuth(username, password)
@@ -53,9 +52,9 @@ class Base:
         self,
         method: Literal["post", "get", "put", "delete", "head"],
         url: str,
-        body: Optional[Union[str, Dict[str, Any]]] = None,
-        file: Optional[Union[str, Path, BufferedReader]] = None,
-        ignore: Optional[List[int]] = None,
+        body: str | dict[str, Any] | None = None,
+        file: str | Path | BufferedReader | None = None,
+        ignore: list[int] | None = None,
         **kwargs: Unpack[RequestParams],
     ) -> requests.Response:
         if method.lower() not in ["get", "post", "put", "delete", "head"]:
