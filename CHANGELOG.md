@@ -12,10 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 - The test workflow skipped all integration tests because they started before GeoServer was ready. It now waits for the GeoServer healthcheck (which was checking a path that always answers 404) and fails when GeoServer is unreachable instead of skipping. The user and user group deletion tests accept the 400 status returned by GeoServer 3.x.
+- Requests made with a `data=` body sent an empty body: `method="external"`, `"url"` and `"remote"` uploads in `upload_coverage_store`, URL uploads in `upload_data_store`, and `GeoWebCache.reload` (#21). `upload_data_store` also sent `http(s)://` URLs to the `external` endpoint instead of `url`.
+- Uploads from a file object (`with open(path, "rb") as f: ...`) sent an empty or truncated body in `upload_data_store`, `upload_coverage_store` and `upload_style`. The store name and file name are now inferred from file objects opened from a path, like from paths.
+- `upload_coverage_store` ignored `coverage_name` and `update_bbox`, sent under the wrong query parameter names. It also accepts `configure="first"`.
 
 #### Added
 
 - `GeoServer` and `GeoWebCache` accept a `timeout` (requests wait forever by default) and a `session`, e.g. to configure retries. The client reuses its HTTP connections across requests and can be used as a context manager to close them.
+- `harvest_coverage_store` adds granules to an existing image mosaic (or any structured coverage store) instead of replacing it (#22).
+- `upload_coverage_store` accepts any coverage format provided by a GeoServer extension, e.g. `format="netcdf"` (#23), and documents the upload methods and which form of server path `method="external"` expects (#21).
 
 #### Changed
 

@@ -1,7 +1,7 @@
 from io import BufferedReader
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Dict, List, Literal, Optional, Tuple, Type, TypedDict, TypeVar, Union
+from typing import IO, Any, Dict, List, Literal, Optional, Tuple, Type, TypedDict, TypeVar, Union
 
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
@@ -78,7 +78,7 @@ class Base:
         method: Literal["post", "get", "put", "delete", "head"],
         url: str,
         body: Optional[Union[str, Dict[str, Any]]] = None,
-        file: Optional[Union[str, Path, BufferedReader]] = None,
+        file: Optional[Union[str, Path, BufferedReader, IO[bytes]]] = None,
         ignore: Optional[List[int]] = None,
         **kwargs: Unpack[RequestParams],
     ) -> requests.Response:
@@ -115,13 +115,19 @@ class Base:
         params["verify"] = kwargs.pop("verify", self.verify)
         params["cert"] = kwargs.pop("cert", self.cert)
         params["timeout"] = kwargs.pop("timeout", self.timeout)
+        if "data" in kwargs:
+            params["data"] = kwargs.pop("data")
+        if "json" in kwargs:
+            params["json"] = kwargs.pop("json")
 
-        if file is None or not isinstance(file, (str, Path)):
-            response = self.session.request(method.lower(), url, **params)
-        else:
+        if isinstance(file, (str, Path)):
             with open(file, "rb") as f:
                 params["data"] = f
                 response = self.session.request(method.lower(), url, **params)
+        else:
+            if file is not None:
+                params["data"] = file
+            response = self.session.request(method.lower(), url, **params)
 
         # Handle errors
         if not response.ok and response.status_code not in ignore:
