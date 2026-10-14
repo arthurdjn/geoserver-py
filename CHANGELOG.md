@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Requests made with a `data=` body sent an empty body: `method="external"`, `"url"` and `"remote"` uploads in `upload_coverage_store`, URL uploads in `upload_data_store`, and `GeoWebCache.reload` (#21). `upload_data_store` also sent `http(s)://` URLs to the `external` endpoint instead of `url`.
 - Uploads from a file object (`with open(path, "rb") as f: ...`) sent an empty or truncated body in `upload_data_store`, `upload_coverage_store` and `upload_style`. The store name and file name are now inferred from file objects opened from a path, like from paths.
 - `upload_coverage_store` ignored `coverage_name` and `update_bbox`, sent under the wrong query parameter names. It also accepts `configure="first"`.
+- `upload_style` ignored `workspace` for ZIP files, and named them after the style inside the SLD instead of the file, which fails when that name is taken (e.g. "raster", a default style).
+- `upload_style` failed on file objects other than `open(path, "rb")`, such as `io.BytesIO`, and read SLD files with the locale encoding instead of UTF-8.
 
 #### Added
 
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - Split `tests/test_geoserver.py` into one test file per resource (`test_workspaces.py`, `test_styles.py`, ...), with the catalog fixtures in `conftest.py` and the shared constants in `helpers.py` (#5).
+- `upload_style` accepts the SLD content as a string, and creates a style in a single request.
 
 #### Removed
 
