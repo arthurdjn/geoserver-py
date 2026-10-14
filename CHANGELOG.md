@@ -7,20 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 0.2.1 (2026-10-14)
+
 ### What's Changed
-
-#### Fixed
-
-#### Added
 
 #### Changed
 
 - Migrated the project from poetry to [uv](https://docs.astral.sh/uv/) (`uv.lock`, PEP 621 metadata, hatchling build backend). `__version__` is read from the installed package metadata, and `make patch|minor|major` bump the version with `uv version --bump`.
 - Pushing a `v*` tag builds the distributions, checks the tag against the package version, publishes to PyPI with trusted publishing and creates the GitHub release. The test workflow builds the package and imports it from a bare wheel install.
-
-#### Removed
-
-### New Contributors
 
 ## 0.2.0 (2025-01-27)
 

@@ -10,23 +10,24 @@ include = ["/geoserver", "/LICENSE", "/README.md", "/pyproject.toml"]
 
 [project]
 name = "geoserver-py"
-version = "0.2.0"
+version = "0.2.1"
 description = "Minimal python client to communicate with Geoserver."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
-authors = [{ name = "Arthur Dujardin", email = "arthurdujardin.github@gmail.com" }]
-maintainers = [{ name = "Arthur Dujardin", email = "arthurdujardin.github@gmail.com" }]
+authors = [
+    { name = "Arthur Dujardin", email = "arthurdujardin.github@gmail.com" },
+]
+maintainers = [
+    { name = "Arthur Dujardin", email = "arthurdujardin.github@gmail.com" },
+]
 keywords = ["geoserver", "python", "client", "api"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.9"
-dependencies = [
-    "requests>=2.31.0,<3.0.0",
-    "typing-extensions>=4.12.1,<5.0.0",
-]
+dependencies = ["requests>=2.31.0,<3.0.0", "typing-extensions>=4.12.1,<5.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/arthurdjn/geoserver-py/"
