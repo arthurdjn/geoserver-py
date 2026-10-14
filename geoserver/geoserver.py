@@ -6,6 +6,8 @@ from io import BufferedReader
 from pathlib import Path
 from typing import IO, Any, Dict, List, Literal, Optional, Union, overload
 
+from typing_extensions import deprecated
+
 from .base import Base
 from .consts import CREATED_MESSAGE, DELETED_MESSAGE, OK_MESSAGE, UPDATED_MESSAGE
 from .utils import file_name, is_zip
@@ -588,6 +590,29 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=dict(list=list))
         return response.json() if format == "json" else response.text
 
+    def coverage_exists(self, name: str, *, workspace: str, store: Optional[str] = None) -> bool:
+        """Check if a coverage exists.
+
+        Args:
+            name: The name of the coverage.
+            workspace: The name of the workspace.
+            store: Optional. The name of the coverage store.
+
+        Returns:
+            True if the coverage exists, False otherwise.
+
+        Example:
+            ```python
+            geoserver.coverage_exists("my_coverage", workspace="my_workspace")
+            ```
+        """
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coverages/{name}.xml"
+        if store is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{store}/coverages/{name}.xml"
+
+        response = self._request(method="head", url=url, ignore=[404])
+        return response.status_code == 200
+
     def create_coverage(self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None) -> str:
         """Creates a new coverage, the underlying data store must exist.
 
@@ -853,7 +878,7 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
-    def coveragestore_exists(self, name: str, *, workspace: str) -> bool:
+    def coverage_store_exists(self, name: str, *, workspace: str) -> bool:
         """Check if a coverage store exists in a workspace.
 
         Args:
@@ -867,12 +892,21 @@ class GeoServer(Base):
             To check if a coverage store exists in a workspace, use the following code:
 
             ```python
-            geoserver.coveragestore_exists("my_coverage_store", workspace="my_workspace")
+            geoserver.coverage_store_exists("my_coverage_store", workspace="my_workspace")
             ```
         """
         url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}.xml"
         response = self._request(method="head", url=url, ignore=[404])
         return response.status_code == 200
+
+    @deprecated("Use `coverage_store_exists` instead.")
+    def coveragestore_exists(self, name: str, *, workspace: str) -> bool:
+        """Check if a coverage store exists in a workspace.
+
+        Warning:
+            Deprecated, use [`coverage_store_exists`][geoserver.geoserver.GeoServer.coverage_store_exists] instead.
+        """
+        return self.coverage_store_exists(name, workspace=workspace)
 
     def create_coverage_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Adds a new coverage store.
@@ -1287,6 +1321,29 @@ class GeoServer(Base):
 
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
+
+    def feature_type_exists(self, name: str, *, workspace: str, store: Optional[str] = None) -> bool:
+        """Check if a feature type exists.
+
+        Args:
+            name: The name of the feature type.
+            workspace: The name of the workspace.
+            store: Optional. The name of the data store.
+
+        Returns:
+            True if the feature type exists, False otherwise.
+
+        Example:
+            ```python
+            geoserver.feature_type_exists("my_feature_type", workspace="my_workspace")
+            ```
+        """
+        url = f"{self.service_url}/rest/workspaces/{workspace}/featuretypes/{name}.xml"
+        if store is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes/{name}.xml"
+
+        response = self._request(method="head", url=url, ignore=[404])
+        return response.status_code == 200
 
     def create_feature_type(
         self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None
@@ -1714,6 +1771,30 @@ class GeoServer(Base):
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
 
+    def layer_exists(self, name: str, *, workspace: Optional[str] = None) -> bool:
+        """Check if a layer exists.
+
+        Args:
+            name: The name of the layer, qualified with its workspace (e.g. "my_workspace:my_layer") if `workspace`
+                is not provided.
+            workspace: Optional. The name of the workspace.
+
+        Returns:
+            True if the layer exists, False otherwise.
+
+        Example:
+            ```python
+            geoserver.layer_exists("my_layer", workspace="my_workspace")
+            geoserver.layer_exists("my_workspace:my_layer")
+            ```
+        """
+        url = f"{self.service_url}/rest/layers/{name}.xml"
+        if workspace is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/layers/{name}.xml"
+
+        response = self._request(method="head", url=url, ignore=[404])
+        return response.status_code == 200
+
     def create_layer(self, body: Union[str, Dict[str, Any]], *, workspace: Optional[str] = None) -> str:
         """Creates a new layer.
 
@@ -1921,6 +2002,19 @@ class GeoServer(Base):
         url = f"{self.service_url}/rest/namespaces.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
+
+    def namespace_exists(self, name: str) -> bool:
+        """Check if a namespace exists.
+
+        Args:
+            name: The prefix of the namespace.
+
+        Returns:
+            True if the namespace exists, False otherwise.
+        """
+        url = f"{self.service_url}/rest/namespaces/{name}.xml"
+        response = self._request(method="head", url=url, ignore=[404])
+        return response.status_code == 200
 
     def create_namespace(self, body: Union[str, Dict[str, Any]]) -> str:
         """Create a new namespace.
@@ -2890,7 +2984,7 @@ class GeoServer(Base):
             workspace: Optional. The name of the workspace.
 
         Returns:
-            Success message.
+            True if the style exists, False otherwise.
         """
         url = f"{self.service_url}/rest/styles/{name}.xml"
         if workspace is not None:
@@ -3638,6 +3732,24 @@ class GeoServer(Base):
         response = self._request(method="get", url=url, params=params)
         return response.json() if format == "json" else response.text
 
+    def wms_layer_exists(self, name: str, *, workspace: str, store: Optional[str] = None) -> bool:
+        """Check if a WMS layer exists.
+
+        Args:
+            name: The name of the layer.
+            workspace: The name of the workspace.
+            store: Optional. The name of the WMS store.
+
+        Returns:
+            True if the WMS layer exists, False otherwise.
+        """
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmslayers/{name}.xml"
+        if store is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{store}/wmslayers/{name}.xml"
+
+        response = self._request(method="head", url=url, ignore=[404])
+        return response.status_code == 200
+
     def create_wms_layer(self, body: Union[str, Dict[str, Any]], *, workspace: str, store: Optional[str] = None) -> str:
         """Creates a new WMS layer.
 
@@ -3790,6 +3902,20 @@ class GeoServer(Base):
         url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores.{format}"
         response = self._request(method="get", url=url)
         return response.json() if format == "json" else response.text
+
+    def wms_store_exists(self, name: str, *, workspace: str) -> bool:
+        """Check if a WMS store exists.
+
+        Args:
+            name: The name of the WMS store.
+            workspace: The name of the workspace.
+
+        Returns:
+            True if the WMS store exists, False otherwise.
+        """
+        url = f"{self.service_url}/rest/workspaces/{workspace}/wmsstores/{name}.xml"
+        response = self._request(method="head", url=url, ignore=[404])
+        return response.status_code == 200
 
     def create_wms_store(self, body: Union[str, Dict[str, Any]], *, workspace: str) -> str:
         """Creates a new WMS store.
