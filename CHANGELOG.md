@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The test workflow skipped all integration tests because they started before GeoServer was ready. It now waits for the GeoServer healthcheck (which was checking a path that always answers 404) and fails when GeoServer is unreachable instead of skipping. The user and user group deletion tests accept the 400 status returned by GeoServer 3.x.
 
+#### Added
+
+- `GeoServer` and `GeoWebCache` accept a `timeout` (requests wait forever by default) and a `session`, e.g. to configure retries. The client reuses its HTTP connections across requests and can be used as a context manager to close them.
+
 #### Changed
 
 - Split `tests/test_geoserver.py` into one test file per resource (`test_workspaces.py`, `test_styles.py`, ...), with the catalog fixtures in `conftest.py` and the shared constants in `helpers.py` (#5).
