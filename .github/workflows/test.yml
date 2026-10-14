@@ -35,16 +35,16 @@ jobs:
           sed -i 's/GEOSERVER_HOST=localhost/GEOSERVER_HOST=127.0.0.1/' .env
           sed -i 's/POSTGRES_HOST=localhost/POSTGRES_HOST=127.0.0.1/' .env
 
-      - name: Setup docker
-        run: sudo apt install docker-compose
-
       - name: Start services
-        run: docker-compose up -d
+        run: docker compose up -d --wait --wait-timeout 300 geoserver postgis
 
       - name: Install all dependencies
         run: uv sync --frozen
 
       - name: Run tests
+        env:
+          # Fail instead of skipping every test when GeoServer is not reachable.
+          GEOSERVER_REQUIRED: "1"
         run: uv run --no-sync pytest tests/ --cov --cov-report=xml
 
       - name: Upload coverage

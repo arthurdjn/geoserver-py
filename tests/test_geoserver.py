@@ -1412,9 +1412,10 @@ def test_delete_user(test_geoserver: GeoServer, username: str, service: Optional
     msg = test_geoserver.delete_user(username, service=service)
     assert isinstance(msg, str)
 
+    # GeoServer 2.x answers 404 for a missing user, 3.x answers 400.
     with pytest.raises(GeoServerError) as e_info:
         test_geoserver.delete_user("not-found")
-    assert e_info.value.status_code == 404
+    assert e_info.value.status_code in (400, 404)
 
 
 @pytest.mark.skipif(not GEOSERVER_RUNNING, reason=f"No GeoServer running at {GEOSERVER_URL!r}.")
@@ -1466,9 +1467,10 @@ def test_delete_group(test_geoserver: GeoServer, group: str, service: Optional[s
     msg = test_geoserver.delete_user_group(group, service=service)
     assert isinstance(msg, str)
 
+    # GeoServer 2.x answers 404 for a missing group, 3.x answers 400.
     with pytest.raises(GeoServerError) as e_info:
         test_geoserver.delete_user_group(group, service=service)
-    assert e_info.value.status_code == 404
+    assert e_info.value.status_code in (400, 404)
 
 
 # Roles
