@@ -1,11 +1,14 @@
 import re
+import shutil
+import tempfile
 import zipfile
 from io import BufferedReader
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union, overload
+from typing import IO, Any, Dict, List, Literal, Optional, Union, overload
 
 from .base import Base
 from .consts import CREATED_MESSAGE, DELETED_MESSAGE, OK_MESSAGE, UPDATED_MESSAGE
+from .utils import file_name, is_zip
 
 
 class GeoServer(Base):
@@ -348,8 +351,8 @@ class GeoServer(Base):
         """Uploads a new or update an existing data store from a local file.
 
         Note:
-            The `store` parameter is automatically inferred from the file, if not provided.
-            In case the file is a buffer, the `store` parameter is required.
+            The `name` parameter is inferred from the file name when `file` is a path or a file object opened
+            from a path. It is required otherwise.
 
         Note:
             The file name of the resource can be overwritten by:
@@ -384,14 +387,15 @@ class GeoServer(Base):
         """
         if isinstance(file, Path):
             file = file.as_posix()
-        if isinstance(file, str):
-            name = name or Path(file).stem
-            filename = filename or f"{name}.{Path(file).suffix[1:]}"
+        local_name = file_name(file)
+        if local_name is not None:
+            name = name or Path(local_name).stem
+            filename = filename or f"{name}{Path(local_name).suffix}"
         if name is None:
-            raise ValueError("The `store` parameter is required.")
+            raise ValueError("The `name` parameter is required.")
 
         headers = {}
-        if zipfile.is_zipfile(file):
+        if is_zip(file):
             headers["Content-Type"] = "application/zip"
 
         params = dict(filename=filename, configure=configure)
@@ -399,8 +403,9 @@ class GeoServer(Base):
             params["update"] = "overwrite"
 
         if isinstance(file, str) and file.startswith(("file:", "http://", "https://")):
+            method = "external" if file.startswith("file:") else "url"
             headers["Content-Type"] = "text/plain"
-            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}/external.{format}"
+            url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{name}/{method}.{format}"
             self._request(method="put", url=url, data=file, params=params, headers=headers)
             return CREATED_MESSAGE
 
@@ -896,7 +901,6 @@ class GeoServer(Base):
         self._request(method="post", url=url, body=body)
         return CREATED_MESSAGE
 
-    # TODO: Update docs
     def upload_coverage_store(
         self,
         file: Union[str, Path, BufferedReader],
@@ -904,37 +908,60 @@ class GeoServer(Base):
         workspace: str,
         name: Optional[str] = None,
         method: Literal["auto", "file", "external", "url", "remote"] = "auto",
-        format: Literal["geotiff", "worldimage", "imagemosaic"],
+        format: Union[Literal["geotiff", "worldimage", "imagemosaic", "netcdf"], str],
         update_bbox: bool = False,
-        configure: Literal["none", "all"] = "all",
+        configure: Literal["none", "first", "all"] = "all",
         use_jai_imageread: bool = False,
         coverage_name: Optional[str] = None,
         filename: Optional[str] = None,
     ) -> str:
-        """Adds a new or update an existing coverage store from a local file.
+        """Creates a new coverage store, or overwrites an existing one, from a file.
 
         Tip:
             This method is the preferred way to upload a new coverage store.
 
+        Warning:
+            Uploading to an existing image mosaic replaces its configuration but does not add the new files
+            to its index. Use [`harvest_coverage_store`][geoserver.geoserver.GeoServer.harvest_coverage_store]
+            to add granules to an existing mosaic.
+
         Note:
-            The `store` parameter is automatically inferred from the file, if not provided.
-            In case the file is a buffer, the `store` parameter is required.
+            The `name` parameter is inferred from the file name when `file` is a path or a file object opened
+            from a path. It is required otherwise.
 
         Note:
             The file name of the resource can be overwritten by:
             - Providing the `filename` parameter.
-            - Using the `store` parameter. In this case, if the `filename` is not provided,
+            - Using the `name` parameter. In this case, if the `filename` is not provided,
                 the file name will be the same as the store name.
 
         Args:
-            file: The file to upload.
+            file: The data to upload: a local path or file object (`method="file"`), the absolute path of a file
+                on the GeoServer machine (`method="external"`), or a URL (`method="url"` or `method="remote"`).
             workspace: The name of the workspace.
             name: Optional. The name of the coverage store.
-            filename:  Optional. The filename parameter specifies the target file name for a file that needs to be harvested as part of a mosaic.
-                This is important to avoid clashes and to make sure the right dimension values are available in the name for multidimensional mosaics to work.
-                Only used if method="file".
-            format: The type of the file. Must be one of "geotiff", "worldimage", or "imagemosaic".
-            update_bbox: When set to `True`, triggers re-calculation of the layer native bbox. Defaults to `False`.
+            method: Optional. How GeoServer gets the data. Defaults to "auto".
+
+                - "file": uploads the local file or file object in the request body.
+                - "external": uses a file that already exists on the GeoServer machine. `file` is its absolute
+                    path on the server, e.g. "/data/raster.tif". GeoServer 2.28 and 3.x reject `file:` URLs
+                    here, while older releases expect one (e.g. "file:///data/raster.tif").
+                - "url": GeoServer downloads the file from `file`, a URL it can reach.
+                - "remote": GeoServer reads the dataset from `file`, a URL (e.g. on cloud storage), without
+                    copying it.
+                - "auto": "url" for `http://` and `https://` URLs, "external" for `file:` URLs and "file" otherwise.
+            format: The coverage format, as GeoServer names it: "geotiff", "imagemosaic", or a format added by an
+                extension (e.g. "netcdf" with the NetCDF extension). The name is case-sensitive. When the format
+                is unknown, the error raised by GeoServer lists the formats it accepts.
+            update_bbox: Optional. Whether to recalculate the native bounding box of the layer. GeoServer reads it
+                when harvesting granules into an existing store. Defaults to `False`.
+            configure: Optional. Which coverages to configure as layers after creating the store:
+                "all" (default), "first" or "none".
+            use_jai_imageread: Optional. Whether to use deferred loading while configuring the coverage.
+                Defaults to `False`.
+            coverage_name: Optional. The name of the coverage (and layer) created from the file.
+            filename: Optional. The target file name on the server, which avoids clashes with existing files.
+                Defaults to the store name with the extension of `file`. Only used with `method="file"`.
 
         Returns:
             Success message.
@@ -943,52 +970,162 @@ class GeoServer(Base):
             To upload a new coverage store from a local file, use the following code:
 
             ```python
-            geoserver.upload_coverage_store("my_coverage_store.zip", workspace="my_workspace", name="my_coverage_store", format="geotiff")
+            geoserver.upload_coverage_store("my_raster.tif", workspace="my_workspace", name="my_coverage_store", format="geotiff")
             ```
 
-            Or, using a buffer:
+            Or, using a file object:
 
             ```python
-            with open("my_coverage_store.zip", "rb") as f:
+            with open("my_raster.tif", "rb") as f:
                 geoserver.upload_coverage_store(f, workspace="my_workspace", name="my_coverage_store", format="geotiff")
+            ```
+
+            To create a store from a file that is already on the GeoServer machine:
+
+            ```python
+            geoserver.upload_coverage_store("/data/my_raster.tif", method="external", workspace="my_workspace", format="geotiff")
             ```
         """
         if isinstance(file, Path):
             file = file.as_posix()
-        if isinstance(file, str):
-            name = name or Path(file).stem
-            filename = filename or f"{name}.{Path(file).suffix[1:]}"
+        local_name = file_name(file)
+        if local_name is not None:
+            name = name or Path(local_name).stem
+            filename = filename or f"{name}{Path(local_name).suffix}"
 
         if name is None:
             raise ValueError("The `name` parameter is required")
 
-        headers = {}
-        if zipfile.is_zipfile(file):
-            headers["Content-Type"] = "application/zip"
-
-        params = dict(
-            update=update_bbox,
+        params: Dict[str, Any] = dict(
             filename=filename,
             configure=configure,
             USE_JAI_IMAGEREAD=use_jai_imageread,
-            coverage_name=coverage_name,
+            coverageName=coverage_name,
         )
+        if update_bbox:
+            params["updateBBox"] = True
 
-        if method == "auto":
-            if isinstance(file, str) and file.startswith(("file:")):
-                method = "external"
-            elif isinstance(file, str) and file.startswith(("http://", "https://")):
-                method = "url"
-
-        if isinstance(file, str) and method in ["external", "url", "remote"]:
-            headers["Content-Type"] = "text/plain"
-            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/{method}.{format}"
-            self._request(method="put", url=url, data=file, params=params, headers=headers)
-            return CREATED_MESSAGE
-
-        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/file.{format}"
-        self._request(method="put", url=url, file=file, params=params, headers=headers)
+        method = self._resolve_upload_method(file, method)
+        self._send_coverage_store_file(
+            "put", file, workspace=workspace, name=name, method=method, format=format, params=params
+        )
         return CREATED_MESSAGE
+
+    def harvest_coverage_store(
+        self,
+        file: Union[str, Path, BufferedReader],
+        *,
+        workspace: str,
+        name: str,
+        method: Literal["auto", "file", "external", "url", "remote"] = "auto",
+        format: Union[Literal["imagemosaic"], str] = "imagemosaic",
+        filename: Optional[str] = None,
+        update_bbox: bool = False,
+    ) -> str:
+        """Harvests new granules into an existing structured coverage store, such as an image mosaic.
+
+        Unlike [`upload_coverage_store`][geoserver.geoserver.GeoServer.upload_coverage_store], which creates or
+        replaces a store, this method adds the files to the index of an existing one. GeoServer answers with an
+        error (405) if the store cannot harvest granules, e.g. a single GeoTIFF store.
+
+        Note:
+            A ZIP archive harvests every granule it contains. A single local file is sent inside a ZIP archive,
+            because GeoServer rejects a lone granule uploaded to a mosaic.
+
+        Args:
+            file: The granules to harvest: a local file, ZIP archive or file object (`method="file"`), the absolute
+                path of a file or directory on the GeoServer machine (`method="external"`), or a URL
+                (`method="url"` or `method="remote"`).
+            workspace: The name of the workspace.
+            name: The name of the existing coverage store.
+            method: Optional. How GeoServer gets the data, see
+                [`upload_coverage_store`][geoserver.geoserver.GeoServer.upload_coverage_store]. Defaults to "auto".
+            format: Optional. The format of the store. Defaults to "imagemosaic".
+            filename: Optional. The granule name in the mosaic, which avoids clashes and carries the dimension
+                values (time, elevation, ...) that the mosaic extracts from file names. Defaults to the name of
+                the file. Required for a file object without a name. Only used with `method="file"`.
+            update_bbox: Optional. Whether to recalculate the native bounding box of the layer after harvesting.
+                Defaults to `False`.
+
+        Returns:
+            Success message.
+
+        Example:
+            To add a local granule to an existing mosaic:
+
+            ```python
+            geoserver.harvest_coverage_store("granule_2024_02.tif", workspace="my_workspace", name="my_mosaic")
+            ```
+
+            To harvest a file, or a whole directory, that is already on the GeoServer machine:
+
+            ```python
+            geoserver.harvest_coverage_store("/data/mosaic/granule_2024_02.tif", method="external", workspace="my_workspace", name="my_mosaic")
+            ```
+        """
+        if isinstance(file, Path):
+            file = file.as_posix()
+
+        params: Dict[str, Any] = {}
+        if update_bbox:
+            params["updateBBox"] = True
+
+        method = self._resolve_upload_method(file, method)
+        if method != "file" or is_zip(file):
+            self._send_coverage_store_file(
+                "post", file, workspace=workspace, name=name, method=method, format=format, params=params
+            )
+            return UPDATED_MESSAGE
+
+        granule_name = filename or file_name(file)
+        if granule_name is None:
+            raise ValueError("The `filename` parameter is required to harvest a file object without a name.")
+
+        with tempfile.TemporaryFile() as archive:
+            with zipfile.ZipFile(archive, "w") as zf:
+                if isinstance(file, str):
+                    zf.write(file, arcname=granule_name)
+                else:
+                    with zf.open(granule_name, "w") as entry:
+                        shutil.copyfileobj(file, entry)
+            archive.seek(0)
+            self._send_coverage_store_file(
+                "post", archive, workspace=workspace, name=name, method="file", format=format, params=params
+            )
+        return UPDATED_MESSAGE
+
+    @staticmethod
+    def _resolve_upload_method(
+        file: Union[str, BufferedReader, IO[bytes]], method: Literal["auto", "file", "external", "url", "remote"]
+    ) -> Literal["file", "external", "url", "remote"]:
+        if method != "auto":
+            return method
+        if isinstance(file, str) and file.startswith("file:"):
+            return "external"
+        if isinstance(file, str) and file.startswith(("http://", "https://")):
+            return "url"
+        return "file"
+
+    def _send_coverage_store_file(
+        self,
+        request_method: Literal["put", "post"],
+        file: Union[str, BufferedReader, IO[bytes]],
+        *,
+        workspace: str,
+        name: str,
+        method: Literal["file", "external", "url", "remote"],
+        format: str,
+        params: Dict[str, Any],
+    ) -> None:
+        if isinstance(file, str) and method in ["external", "url", "remote"]:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/{method}.{format}"
+            headers = {"Content-Type": "text/plain"}
+            self._request(method=request_method, url=url, data=file, params=params, headers=headers)
+            return
+
+        headers = {"Content-Type": "application/zip"} if is_zip(file) else {}
+        url = f"{self.service_url}/rest/workspaces/{workspace}/coveragestores/{name}/file.{format}"
+        self._request(method=request_method, url=url, file=file, params=params, headers=headers)
 
     @overload
     def get_coverage_store(
@@ -2889,7 +3026,7 @@ class GeoServer(Base):
             raise ValueError("The `style` argument must be provided when overwrite is `True`")
 
         # Upload from a zip file
-        if zipfile.is_zipfile(file):
+        if is_zip(file):
             headers = {"Content-Type": "application/zip"}
             url = f"{self.service_url}/rest/styles"
             if overwrite:
