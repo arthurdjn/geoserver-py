@@ -22,10 +22,6 @@ lint-fix: ## Lint and fix source code and tests
 type: ## Type in source code and tests
 	$(CMD) mypy $(SRC) $(TESTS)
 
-.PHONY: pre-commit
-pre-commit: ## Run pre-commit hooks
-	$(CMD) pre-commit run --all-files
-
 .PHONY: all
 all: format type lint isort ## Run all formatting commands
 
