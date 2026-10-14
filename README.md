@@ -4,7 +4,7 @@
 [![python](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10_%7C_3.11_%7C_3.12-red.svg?color=009ACF&labelColor=6DBA65&logo=python&logoColor=white)](https://www.python.org/)
 [![ruff](https://img.shields.io/badge/ruff-linter-red.svg?color=009ACF&labelColor=6DBA65&logo=ruff&logoColor=white)](https://docs.astral.sh/ruff)
 [![mypy](https://img.shields.io/badge/mypy-typing-red.svg?color=009ACF&labelColor=6DBA65)](https://mypy-lang.org)
-[![poetry](https://img.shields.io/badge/poetry-dependencies-red.svg?color=009ACF&labelColor=6DBA65&logo=poetry&logoColor=white)](https://python-poetry.org)
+[![uv](https://img.shields.io/badge/uv-dependencies-red.svg?color=009ACF&labelColor=6DBA65&logo=uv&logoColor=white)](https://docs.astral.sh/uv)
 [![pytest](https://img.shields.io/badge/pytest-testing-red.svg?color=009ACF&labelColor=6DBA65&logo=pytest&logoColor=white)](https://pytest.org)
 
 </div>
@@ -132,10 +132,10 @@ This section if for advanced users who want to contribute to the package. It wil
    cd geoserver-py
    ```
 
-1. Install the dependencies (we recommend using [`poetry`](https://python-poetry.org/) for this)
+1. Install the package and the development dependencies with [`uv`](https://docs.astral.sh/uv/)
 
    ```bash
-   poetry install
+   uv sync
    ```
 
 > \[!NOTE\]

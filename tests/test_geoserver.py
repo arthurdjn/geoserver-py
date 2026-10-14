@@ -1402,6 +1402,7 @@ def test_update_user(test_geoserver: GeoServer, username: str, service: Optional
 
     data = test_geoserver.get_users()
     user = next((u for u in data["users"] if u["userName"] == username), None)
+    assert user is not None
     assert user["enabled"] is False
 
 

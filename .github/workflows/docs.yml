@@ -13,20 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.12
+          python-version: "3.12"
 
-      - name: Setup python environment
-        run: |
-          sudo apt install pipx
-          pipx ensurepath
-          pipx install poetry
-          poetry install
+      - name: Install package + docs tooling
+        run: uv sync --frozen
 
       - name: Build docs
-        run: poetry run mkdocs build
+        run: uv run --no-sync mkdocs build
 
       - name: Publish docs
-        run: poetry run mkdocs gh-deploy --force
+        run: uv run --no-sync mkdocs gh-deploy --force

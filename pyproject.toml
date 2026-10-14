@@ -1,55 +1,70 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[tool.hatch.build.targets.wheel]
+packages = ["geoserver"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/geoserver", "/LICENSE", "/README.md", "/pyproject.toml"]
+
+[project]
 name = "geoserver-py"
 version = "0.2.0"
 description = "Minimal python client to communicate with Geoserver."
-authors = ["Arthur Dujardin <arthurdujardin.github@gmail.com>"]
-maintainers = ["Arthur Dujardin <arthurdujardin.github@gmail.com>"]
-homepage = "https://github.com/arthurdjn/geoserver-py/"
-repository = "https://github.com/arthurdjn/geoserver-py/"
-documentation = "https://github.com/arthurdjn/geoserver-py/"
-license = "MIT"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Arthur Dujardin", email = "arthurdujardin.github@gmail.com" }]
+maintainers = [{ name = "Arthur Dujardin", email = "arthurdujardin.github@gmail.com" }]
 keywords = ["geoserver", "python", "client", "api"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-packages = [{ include = "geoserver", from = "." }]
+requires-python = ">=3.9"
+dependencies = [
+    "requests>=2.31.0,<3.0.0",
+    "typing-extensions>=4.12.1,<5.0.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-requests = "^2.31.0"
-typing-extensions = "^4.12.1"
+[project.urls]
+Homepage = "https://github.com/arthurdjn/geoserver-py/"
+Repository = "https://github.com/arthurdjn/geoserver-py/"
+Documentation = "https://github.com/arthurdjn/geoserver-py/"
+Changelog = "https://github.com/arthurdjn/geoserver-py/blob/main/CHANGELOG.md"
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.5.0"
-pytest = "^8.0.0"
-pytest-cov = "^4.1.0"
-mkdocs = "^1.5.3"
-mkdocs-material = "^9.5.6"
-mkdocstrings-python = "^1.8.0"
-types-requests = "^2.31.0.20240125"
-ipykernel = "^6.29.0"
-python-dotenv = "^1.0.1"
-psycopg2-binary = "^2.9.9"
-seaborn = "^0.13.2"
-mkdocs-jupyter = "^0.24.7"
-mkdocs-simple-hooks = "^0.1.5"
-mkdocs-exclude = "^1.0.2"
-nbconvert = "^7.16.4"
-dict2xml = "^1.7.5"
-bump-my-version = "^0.21.1"
-ruff = "^0.7.0"
-mypy = "^1.13.0"
+[dependency-groups]
+dev = [
+    "pre-commit>=3.5.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.5.6",
+    "mkdocstrings-python>=1.8.0",
+    "types-requests>=2.31.0.20240125",
+    "ipykernel>=6.29.0",
+    "python-dotenv>=1.0.1",
+    "psycopg2-binary>=2.9.9",
+    "seaborn>=0.13.2",
+    "mkdocs-jupyter>=0.24.7",
+    "mkdocs-simple-hooks>=0.1.5",
+    "mkdocs-exclude>=1.0.2",
+    "nbconvert>=7.16.4",
+    "dict2xml>=1.7.5",
+    "ruff>=0.7.0",
+    "mypy>=1.13.0",
+]
+
+[tool.uv]
+exclude-newer = "14 days"
 
 [tool.ruff]
 target-version = "py312"
 line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -86,28 +101,3 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == '__main__'",
 ]
-
-[tool.bumpversion]
-current_version = "0.2.0"
-parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
-serialize = ["{major}.{minor}.{patch}"]
-regex = false
-ignore_missing_version = false
-tag = true
-sign_tags = false
-tag_name = "{new_version}"
-tag_message = "Bump version: {current_version} → {new_version}"
-allow_dirty = false
-commit = false
-message = "release: version updated from {current_version} to {new_version}"
-commit_args = ""
-
-[[tool.bumpversion.files]]
-filename = "pyproject.toml"
-search = 'version = "{current_version}"'
-replace = 'version = "{new_version}"'
-
-[[tool.bumpversion.files]]
-filename = "geoserver/__init__.py"
-search = '__version__ = "{current_version}"'
-replace = '__version__ = "{new_version}"'

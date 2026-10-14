@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,9 +23,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        id: setup-python
-        uses: actions/setup-python@v5
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -38,18 +41,43 @@ jobs:
       - name: Start services
         run: docker-compose up -d
 
-      # Install & configure poetry
-      - name: Setup python environment
-        run: |
-          sudo apt install pipx
-          pipx ensurepath
-          pipx install poetry
-          poetry install
+      - name: Install all dependencies
+        run: uv sync --frozen
 
       - name: Run tests
-        run: poetry run python -m pytest tests/ --cov --cov-report=xml
+        run: uv run --no-sync pytest tests/ --cov --cov-report=xml
 
       - name: Upload coverage
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: false
+
+  # Package gate: build the distributions and import from a bare wheel install (no dev group), so an
+  # undeclared runtime dependency or a packaging mistake fails here instead of in the publish workflow.
+  package:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Build the wheel and sdist
+        run: uv build
+
+      - name: Check the distributions
+        run: uvx twine check --strict dist/*
+
+      - name: Import from a bare wheel install
+        run: |
+          uv venv .venv-bare
+          VIRTUAL_ENV=$PWD/.venv-bare uv pip install dist/*.whl
+          .venv-bare/bin/python -c "import geoserver; print(geoserver.__version__); geoserver.GeoServer; geoserver.GeoWebCache"
