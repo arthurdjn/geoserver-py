@@ -1,10 +1,17 @@
+import os
 import subprocess
 from typing import Generator
 
 import pytest
-from helpers import GEOSERVER_ADMIN_PASSWORD, GEOSERVER_ADMIN_USER, GEOSERVER_URL
+from helpers import GEOSERVER_ADMIN_PASSWORD, GEOSERVER_ADMIN_USER, GEOSERVER_RUNNING, GEOSERVER_URL
 
 from geoserver import GeoServer, GeoWebCache
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    # The tests skip themselves when GeoServer is down, which silently turns a broken CI setup into a green run.
+    if os.getenv("GEOSERVER_REQUIRED") and not GEOSERVER_RUNNING:
+        raise pytest.UsageError(f"GEOSERVER_REQUIRED is set but no GeoServer is running at {GEOSERVER_URL!r}.")
 
 
 @pytest.fixture(scope="session", autouse=True)
