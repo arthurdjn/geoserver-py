@@ -23,11 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GeoServer` and `GeoWebCache` accept a `timeout` (requests wait forever by default) and a `session`, e.g. to configure retries. The client reuses its HTTP connections across requests and can be used as a context manager to close them.
 - `harvest_coverage_store` adds granules to an existing image mosaic (or any structured coverage store) instead of replacing it (#22).
 - `upload_coverage_store` accepts any coverage format provided by a GeoServer extension, e.g. `format="netcdf"` (#23), and documents the upload methods and which form of server path `method="external"` expects (#21).
+- `coverage_exists`, `feature_type_exists`, `layer_exists`, `namespace_exists`, `wms_store_exists` and `wms_layer_exists`, to write scripts that create a resource only when it is missing.
 
 #### Changed
 
 - Split `tests/test_geoserver.py` into one test file per resource (`test_workspaces.py`, `test_styles.py`, ...), with the catalog fixtures in `conftest.py` and the shared constants in `helpers.py` (#5).
 - `upload_style` accepts the SLD content as a string, and creates a style in a single request.
+- Renamed `coveragestore_exists` to `coverage_store_exists`, like `data_store_exists`. The old name still works and emits a `DeprecationWarning`.
 
 #### Removed
 
