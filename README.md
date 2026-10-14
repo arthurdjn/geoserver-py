@@ -169,10 +169,10 @@ make all      # Run all the above commands
 
 ### Before committing
 
-Make sure to run the `pre-commit` hook before committing, which will check that the formatting, linting and typing are correct:
+Make sure the formatting, linting and typing are correct before committing:
 
 ```bash
-make pre-commit
+make format lint type
 ```
 
 > \[!NOTE\]

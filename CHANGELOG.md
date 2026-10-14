@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The test workflow skipped all integration tests because they started before GeoServer was ready. It now waits for the GeoServer healthcheck (which was checking a path that always answers 404) and fails when GeoServer is unreachable instead of skipping. The user and user group deletion tests accept the 400 status returned by GeoServer 3.x.
 
+#### Removed
+
+- Removed pre-commit (`.pre-commit-config.yaml`, the dev dependency and `make pre-commit`). The linting workflow runs `ruff check` and `ruff format --check` instead, use `make format lint type` locally.
+
 ## 0.2.1 (2026-10-14)
 
 ### What's Changed
