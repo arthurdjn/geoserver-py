@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `harvest_coverage_store` adds granules to an existing image mosaic (or any structured coverage store) instead of replacing it (#22).
 - `upload_coverage_store` accepts any coverage format provided by a GeoServer extension, e.g. `format="netcdf"` (#23), and documents the upload methods and which form of server path `method="external"` expects (#21).
 - `coverage_exists`, `feature_type_exists`, `layer_exists`, `namespace_exists`, `wms_store_exists` and `wms_layer_exists`, to write scripts that create a resource only when it is missing.
+- `list_workspaces`, `list_data_stores`, `list_coverage_stores`, `list_feature_types`, `list_coverages`, `list_layers`, `list_layer_groups` and `list_styles` return plain lists of names, including an empty list where GeoServer answers `""`. `list_feature_types(..., available=True)` returns the tables of a store that are not published yet.
 
 #### Changed
 

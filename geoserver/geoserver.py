@@ -13,6 +13,18 @@ from .consts import CREATED_MESSAGE, DELETED_MESSAGE, OK_MESSAGE, UPDATED_MESSAG
 from .utils import file_name, is_zip
 
 
+def _items(collection: Any, item: str) -> List[Any]:
+    # GeoServer answers "" instead of an empty collection, and some collections hold a single item as an object.
+    items = collection.get(item) if isinstance(collection, dict) else None
+    if items is None:
+        return []
+    return items if isinstance(items, list) else [items]
+
+
+def _names(data: Dict[str, Any], collection: str, item: str) -> List[str]:
+    return [entry["name"] for entry in _items(data.get(collection), item)]
+
+
 class GeoServer(Base):
     """
     GeoServer Client for Python. Use this class to interact with a GeoServer instance.
@@ -254,6 +266,20 @@ class GeoServer(Base):
         return response.json() if format == "json" else response.text
 
     # Data Stores
+
+    def list_data_stores(self, *, workspace: str) -> List[str]:
+        """Returns the names of the data stores of a workspace.
+
+        Args:
+            workspace: The name of the workspace.
+
+        Example:
+            ```python
+            geoserver.list_data_stores(workspace="my_workspace")
+            # ["roads", "buildings"]
+            ```
+        """
+        return _names(self.get_data_stores(workspace=workspace), "dataStores", "dataStore")
 
     @overload
     def get_data_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
@@ -530,6 +556,21 @@ class GeoServer(Base):
     # TODO: Add MongoDB endpoints
 
     # Coverages
+
+    def list_coverages(self, *, workspace: str, store: Optional[str] = None) -> List[str]:
+        """Returns the names of the coverages of a workspace, or of a single coverage store.
+
+        Args:
+            workspace: The name of the workspace.
+            store: Optional. The name of the coverage store.
+
+        Example:
+            ```python
+            geoserver.list_coverages(workspace="my_workspace", store="elevation")
+            # ["elevation"]
+            ```
+        """
+        return _names(self.get_coverages(workspace=workspace, store=store), "coverages", "coverage")
 
     @overload
     def get_coverages(
@@ -848,6 +889,20 @@ class GeoServer(Base):
         return OK_MESSAGE
 
     # Coverage Stores
+
+    def list_coverage_stores(self, *, workspace: str) -> List[str]:
+        """Returns the names of the coverage stores of a workspace.
+
+        Args:
+            workspace: The name of the workspace.
+
+        Example:
+            ```python
+            geoserver.list_coverage_stores(workspace="my_workspace")
+            # ["elevation", "imagery"]
+            ```
+        """
+        return _names(self.get_coverage_stores(workspace=workspace), "coverageStores", "coverageStore")
 
     @overload
     def get_coverage_stores(self, *, workspace: str, format: Literal["json"] = "json") -> Dict[str, Any]: ...
@@ -1287,6 +1342,32 @@ class GeoServer(Base):
 
     # Feature Types
 
+    def list_feature_types(self, *, workspace: str, store: Optional[str] = None, available: bool = False) -> List[str]:
+        """Returns the names of the feature types of a workspace, or of a single data store.
+
+        Args:
+            workspace: The name of the workspace.
+            store: Optional. The name of the data store. Required if `available` is `True`.
+            available: Optional. Whether to return the tables (or files) of the store that are not published yet,
+                instead of the published feature types. Defaults to `False`.
+
+        Example:
+            To publish every table of a PostGIS store that is not published yet:
+
+            ```python
+            for table in geoserver.list_feature_types(workspace="my_workspace", store="my_database", available=True):
+                geoserver.create_feature_type({"featureType": {"name": table}}, workspace="my_workspace", store="my_database")
+            ```
+        """
+        if not available:
+            return _names(self.get_feature_types(workspace=workspace, store=store), "featureTypes", "featureType")
+        if store is None:
+            raise ValueError("The `store` parameter is required to list the available feature types.")
+
+        url = f"{self.service_url}/rest/workspaces/{workspace}/datastores/{store}/featuretypes.json"
+        response = self._request(method="get", url=url, params=dict(list="available"))
+        return _items(response.json().get("list"), "string")
+
     @overload
     def get_feature_types(
         self, *, workspace: str, store: Optional[str] = None, format: Literal["json"] = "json"
@@ -1593,6 +1674,19 @@ class GeoServer(Base):
 
     # Layer Groups
 
+    def list_layer_groups(self, *, workspace: Optional[str] = None) -> List[str]:
+        """Returns the names of the layer groups of a workspace, or of the global layer groups.
+
+        Args:
+            workspace: Optional. The name of the workspace.
+
+        Example:
+            ```python
+            geoserver.list_layer_groups(workspace="my_workspace")
+            ```
+        """
+        return _names(self.get_layer_groups(workspace=workspace), "layerGroups", "layerGroup")
+
     @overload
     def get_layer_groups(
         self, *, workspace: Optional[str] = None, format: Literal["json"] = "json"
@@ -1745,6 +1839,24 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     # Layers
+
+    def list_layers(self, *, workspace: Optional[str] = None) -> List[str]:
+        """Returns the names of the layers of a workspace, or of all layers.
+
+        Note:
+            The names of all layers are qualified with their workspace (e.g. "my_workspace:roads"), the names of the
+            layers of a workspace are not.
+
+        Args:
+            workspace: Optional. The name of the workspace.
+
+        Example:
+            ```python
+            geoserver.list_layers(workspace="my_workspace")
+            # ["roads", "elevation"]
+            ```
+        """
+        return _names(self.get_layers(workspace=workspace), "layers", "layer")
 
     @overload
     def get_layers(self, *, workspace: Optional[str] = None, format: Literal["json"] = "json") -> Dict[str, Any]: ...
@@ -2950,6 +3062,19 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     # Styles
+
+    def list_styles(self, *, workspace: Optional[str] = None) -> List[str]:
+        """Returns the names of the styles of a workspace, or of the global styles.
+
+        Args:
+            workspace: Optional. The name of the workspace.
+
+        Example:
+            ```python
+            geoserver.list_styles(workspace="my_workspace")
+            ```
+        """
+        return _names(self.get_styles(workspace=workspace), "styles", "style")
 
     @overload
     def get_styles(self, *, workspace: Optional[str] = None, format: Literal["json"] = "json") -> Dict[str, Any]: ...
@@ -4283,6 +4408,17 @@ class GeoServer(Base):
         return DELETED_MESSAGE
 
     # Workspaces
+
+    def list_workspaces(self) -> List[str]:
+        """Returns the names of all workspaces.
+
+        Example:
+            ```python
+            for name in geoserver.list_workspaces():
+                print(name)
+            ```
+        """
+        return _names(self.get_workspaces(), "workspaces", "workspace")
 
     @overload
     def get_workspaces(self, *, format: Literal["json"] = "json") -> Dict[str, Any]: ...
