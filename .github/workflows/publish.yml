@@ -1,35 +1,84 @@
-name: Build and publish python package
+name: Publish
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
 
 jobs:
-  publish:
+  build:
+    name: Build distributions
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.12
+          python-version: "3.12"
 
-      - name: Setup python environment
+      - name: Verify the tag matches the package version
         run: |
-          sudo apt install pipx
-          pipx ensurepath
-          pipx install poetry
+          VERSION="v$(uv version --short)"
+          if [ "$VERSION" != "${{ github.ref_name }}" ]; then
+            echo "Tag ${{ github.ref_name }} does not match the pyproject.toml version ($VERSION)"
+            exit 1
+          fi
 
-      - name: Install package
-        run: poetry install --without dev
+      - name: Build the sdist and the wheel
+        run: uv build
 
-      - name: Build package
-        run: poetry build
+      - name: Check the distributions
+        run: uvx twine check --strict dist/*
 
-      - name: Publish package
-        run: |
-          poetry config pypi-token.pypi "${{ secrets.PYPI_API_KEY }}"
-          poetry publish
+      - name: Upload the distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/geoserver-py/
+    permissions:
+      id-token: write
+    steps:
+      - name: Download the distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Publish with trusted publishing
+        run: uv publish dist/*
+
+  github-release:
+    name: Create the GitHub release
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download the distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

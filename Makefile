@@ -2,7 +2,7 @@
 
 SRC:=geoserver
 TESTS:=tests
-CMD:=poetry run
+CMD:=uv run --no-sync
 
 # Linting, formatting, etc.
 
@@ -12,11 +12,11 @@ format: ## Format source code and tests
 
 .PHONY: lint
 lint: ## Lint source code and tests
-	$(CMD) ruff $(SRC) $(TESTS)
+	$(CMD) ruff check $(SRC) $(TESTS)
 
 .PHONY: lint-fix
 lint-fix: ## Lint and fix source code and tests
-	$(CMD) ruff --fix $(SRC) $(TESTS)
+	$(CMD) ruff check --fix $(SRC) $(TESTS)
 
 .PHONY: type
 type: ## Type in source code and tests
@@ -49,22 +49,19 @@ tests: ## Run tests
 
 .PHONY: show-bump
 show-bump: ## Show available next versions
-	$(CMD) bump-my-version show-bump
+	@for part in patch minor major; do uv version --bump $$part --dry-run --no-sync; done
 
 .PHONY: patch
 patch: ## Bump version to next patch
-	$(CMD) bump-my-version show --increment patch current_version new_version --format yaml
-	$(CMD) bump-my-version bump patch
+	uv version --bump patch
 
 .PHONY: minor
 minor: ## Bump version to next minor
-	$(CMD) bump-my-version show --increment minor current_version new_version --format yaml
-	$(CMD) bump-my-version bump minor
+	uv version --bump minor
 
 .PHONY: major
 major: ## Bump version to next major
-	$(CMD) bump-my-version show --increment major current_version new_version --format yaml
-	$(CMD) bump-my-version bump major
+	uv version --bump major
 
 # Utils
 

@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   mypy:
     runs-on: ubuntu-latest
@@ -14,17 +18,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.12
+          python-version: "3.12"
 
-      - name: Setup python environment
-        run: |
-          sudo apt install pipx
-          pipx ensurepath
-          pipx install poetry
-          poetry install
+      - name: Install package + dev tools
+        run: uv sync --frozen
 
       - name: Check types
-        run: poetry run mypy .
+        run: uv run --no-sync mypy .
