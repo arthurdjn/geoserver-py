@@ -2955,7 +2955,7 @@ class GeoServer(Base):
     @overload
     def upload_style(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: Union[str, Path, IO[bytes]],
         *,
         name: str,
         workspace: Optional[str] = None,
@@ -2965,7 +2965,7 @@ class GeoServer(Base):
     @overload
     def upload_style(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: Union[str, Path, IO[bytes]],
         *,
         name: Optional[str] = None,
         workspace: Optional[str] = None,
@@ -2974,79 +2974,88 @@ class GeoServer(Base):
 
     def upload_style(
         self,
-        file: Union[str, Path, BufferedReader],
+        file: Union[str, Path, IO[bytes]],
         *,
         name: Optional[str] = None,
         workspace: Optional[str] = None,
         overwrite: bool = False,
     ) -> str:
-        """Uploads a style.
+        """Uploads a style from an SLD file, a ZIP file (an SLD file with its icons), a file object or SLD content.
 
         Note:
-            The `name` parameter must be provided if the `file` argument is not a file path.
-
-        Note:
-            If overwriting a style, you must provide the `style` name.
+            The `name` parameter is inferred from the file name when `file` is a path or a file object opened from a
+            path. It is required otherwise.
 
         Args:
-            file: The path to the file to upload.
-            name: Optional. The name of the style. If not provided, it will be inferred from the filename.
+            file: The path to an SLD or ZIP file, a binary file object (e.g. `open(path, "rb")` or `io.BytesIO`),
+                or the SLD content itself as a string.
+            name: Optional. The name of the style. Required if `overwrite` is `True`.
             workspace: Optional. The name of the workspace.
-            overwrite: Optional. Whether to overwrite the style if it already exists. Defaults to False.
+            overwrite: Optional. Whether to replace the content of an existing style. Uploading a style that already
+                exists without `overwrite=True` raises an error. Defaults to False.
 
         Returns:
             Success message.
 
         Example:
-            To upload a style from a local SLD file:
+            To upload a style from a local SLD or ZIP file, named after the file:
 
             ```python
-            file_path = "path/to/my_style.sld" # Or "path/to/my_style.zip"
-            geoserver.upload_style(file=file_path, workspace="demo")
-
-            # Open the file yourself
-            with open(file_path, "rb") as f:
-                geoserver.upload_style(file=f, workspace="demo")
+            geoserver.upload_style("path/to/my_style.sld", workspace="demo")
             ```
 
-            To overwrite an existing style with a new SLD file (or ZIP file):
+            To upload a style generated in Python:
 
             ```python
-            file_path = "path/to/my_style.sld" # Or "path/to/my_style.zip"
-            geoserver.upload_style(file=file_path, style="my_style", workspace="demo", overwrite=True)
-
-            # Open the file yourself
-            with open(file_path, "rb") as f:
-                geoserver.upload_style(file=f, style="my_style", workspace="demo", overwrite=True)
+            sld = "<StyledLayerDescriptor version=\"1.0.0\" ...>...</StyledLayerDescriptor>"
+            geoserver.upload_style(sld, name="my_style", workspace="demo")
             ```
 
+            To replace the content of an existing style:
+
+            ```python
+            geoserver.upload_style("path/to/my_style.sld", name="my_style", workspace="demo", overwrite=True)
+            ```
         """
-        method: Literal["post", "put"] = "put" if overwrite else "post"
         if overwrite and name is None:
-            raise ValueError("The `style` argument must be provided when overwrite is `True`")
+            raise ValueError("The `name` argument must be provided when `overwrite` is `True`.")
+        if isinstance(file, Path):
+            file = file.as_posix()
+
+        is_content = isinstance(file, str) and file.lstrip().startswith("<")
+        if name is None and not is_content:
+            local_name = file_name(file)
+            name = Path(local_name).stem if local_name is not None else None
+        if name is None:
+            raise ValueError("The `name` argument must be provided, either as an argument or as the file name.")
+
+        url = f"{self.service_url}/rest/styles"
+        if workspace is not None:
+            url = f"{self.service_url}/rest/workspaces/{workspace}/styles"
 
         # Upload from a zip file
-        if is_zip(file):
+        if not is_content and is_zip(file):
             headers = {"Content-Type": "application/zip"}
-            url = f"{self.service_url}/rest/styles"
             if overwrite:
-                url = f"{self.service_url}/rest/styles/{name}.zip"
-
-            _ = self._request(method=method, url=url, file=file, headers=headers)
+                self._request(method="put", url=f"{url}/{name}", file=file, headers=headers)
+            else:
+                self._request(method="post", url=url, file=file, params=dict(name=name), headers=headers)
             return CREATED_MESSAGE
 
-        # Upload from a single SLD file
-        if name is None and isinstance(file, (str, Path)):
-            name = Path(file).stem
-        if name is None:
-            raise ValueError("The `style` name must be provided, either as an argument or as the filename.")
+        # Upload from SLD content
+        if is_content:
+            sld = str(file)
+        elif isinstance(file, str):
+            sld = Path(file).read_text(encoding="utf-8")
+        else:
+            content = file.read()
+            sld = content.decode("utf-8") if isinstance(content, bytes) else content
 
-        if not overwrite:
-            body = f"<style><name>{name}</name><filename>{name}.sld</filename></style>"
-            _ = self.create_style(body=body, workspace=workspace)
-
-        body = file.read().decode("utf-8") if isinstance(file, BufferedReader) else Path(file).read_text()
-        _ = self.update_style(name=name, body=body, workspace=workspace)
+        if overwrite:
+            self.update_style(name, body=sld, workspace=workspace)
+        else:
+            headers = {"Content-Type": self._sld_content_type(sld)}
+            self._request(method="post", url=url, body=sld, params=dict(name=name), headers=headers)
         return CREATED_MESSAGE
 
     def update_style(self, name: str, body: str, *, workspace: Optional[str] = None) -> str:
@@ -3067,20 +3076,16 @@ class GeoServer(Base):
         if workspace is not None:
             url = f"{self.service_url}/rest/workspaces/{workspace}/styles/{name}"
 
-        # Automatically determine the content type based on the SLD version
-        pattern = r'StyledLayerDescriptor[^>]*version="([^"]*)"'
-        match = re.search(pattern, body)
+        self._request(method="put", url=url, body=body, headers={"Content-Type": self._sld_content_type(body)})
+        return UPDATED_MESSAGE
+
+    @staticmethod
+    def _sld_content_type(sld: str) -> str:
+        """Returns the content type of an SLD document, which depends on its version."""
+        match = re.search(r'StyledLayerDescriptor[^>]*version="([^"]*)"', sld)
         if not match:
             raise ValueError("The SLD version could not be determined.")
-
-        sld_version = match.group(1)
-
-        content_type = "application/vnd.ogc.sld+xml"
-        if sld_version == "1.1.0" or sld_version == "1.1":
-            content_type = "application/vnd.ogc.se+xml"
-
-        self._request(method="put", url=url, body=body, headers={"Content-Type": content_type})
-        return UPDATED_MESSAGE
+        return "application/vnd.ogc.se+xml" if match.group(1) in ("1.1.0", "1.1") else "application/vnd.ogc.sld+xml"
 
     def download_style(self, name: str, *, workspace: Optional[str] = None) -> str:
         """Downloads a single style.
