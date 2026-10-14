@@ -27,6 +27,10 @@ class GeoServer(Base):
         proxies: The proxies to be included in the requests.
         verify: A boolean indicating whether or not the SSL certificates should be verified.
         cert: The certificate to be included in the requests.
+        timeout: How many seconds to wait for the server, either a single value or a `(connect, read)` tuple.
+            Waits forever by default. Set the `timeout` attribute to change it, e.g. before a long upload.
+        session: The `requests.Session` used to send the requests, e.g. to configure retries.
+            A new session is created by default.
 
     Example:
         ```python
@@ -35,8 +39,28 @@ class GeoServer(Base):
         geoserver = GeoServer(
             service_url="http://localhost:8080/geoserver",
             username="admin",
-            password="geoserver"
+            password="geoserver",
+            timeout=30,
         )
+        ```
+
+        The client reuses its connections across requests. Use it as a context manager to close them when done:
+
+        ```python
+        with GeoServer("http://localhost:8080/geoserver", username="admin", password="geoserver") as geoserver:
+            geoserver.get_workspaces()
+        ```
+
+        To retry failed requests, pass a session with a retry policy:
+
+        ```python
+        import requests
+        from requests.adapters import HTTPAdapter
+        from urllib3.util import Retry
+
+        session = requests.Session()
+        session.mount("http://", HTTPAdapter(max_retries=Retry(total=3, backoff_factor=0.5)))
+        geoserver = GeoServer("http://localhost:8080/geoserver", username="admin", password="geoserver", session=session)
         ```
     """
 

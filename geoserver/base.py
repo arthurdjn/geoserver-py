@@ -1,6 +1,7 @@
 from io import BufferedReader
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, TypedDict, Union
+from types import TracebackType
+from typing import Any, Dict, List, Literal, Optional, Tuple, Type, TypedDict, TypeVar, Union
 
 import requests
 from requests.auth import AuthBase, HTTPBasicAuth
@@ -8,6 +9,9 @@ from typing_extensions import Unpack
 
 from .exceptions import GeoServerError
 from .utils import find_html_body, find_html_description_section, find_html_message_section, is_html
+
+Timeout = Union[float, Tuple[float, float]]
+BaseT = TypeVar("BaseT", bound="Base")
 
 
 class RequestParams(TypedDict, total=False):
@@ -21,6 +25,7 @@ class RequestParams(TypedDict, total=False):
     proxies: Any
     verify: bool
     cert: Optional[str]
+    timeout: Optional[Timeout]
 
 
 class Base:
@@ -36,6 +41,8 @@ class Base:
         proxies: Any = None,
         verify: bool = True,
         cert: Optional[str] = None,
+        timeout: Optional[Timeout] = None,
+        session: Optional[requests.Session] = None,
     ):
         if auth is None and username is not None and password is not None:
             auth = HTTPBasicAuth(username, password)
@@ -48,6 +55,23 @@ class Base:
         self.proxies = proxies or {}
         self.verify = verify
         self.cert = cert
+        self.timeout = timeout
+        self.session = session if session is not None else requests.Session()
+
+    def close(self) -> None:
+        """Closes the connections of the HTTP session. The client stays usable and reconnects when needed."""
+        self.session.close()
+
+    def __enter__(self: BaseT) -> BaseT:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
 
     def _request(
         self,
@@ -90,13 +114,14 @@ class Base:
         params["allow_redirects"] = kwargs.pop("allow_redirects", self.allow_redirects)
         params["verify"] = kwargs.pop("verify", self.verify)
         params["cert"] = kwargs.pop("cert", self.cert)
+        params["timeout"] = kwargs.pop("timeout", self.timeout)
 
         if file is None or not isinstance(file, (str, Path)):
-            response = requests.request(method.lower(), url, **params)
+            response = self.session.request(method.lower(), url, **params)
         else:
             with open(file, "rb") as f:
                 params["data"] = f
-                response = requests.request(method.lower(), url, **params)
+                response = self.session.request(method.lower(), url, **params)
 
         # Handle errors
         if not response.ok and response.status_code not in ignore:
